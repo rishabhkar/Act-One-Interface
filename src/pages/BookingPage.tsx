@@ -1,0 +1,465 @@
+import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { CreditCard, Loader2, ReceiptText, Ticket } from 'lucide-react'
+import GlassPanel from '../components/GlassPanel'
+import SectionReveal from '../components/SectionReveal'
+import { siteContent } from '../content/siteContent'
+import { shows } from '../data/shows'
+import { issueTicket } from '../lib/api'
+
+type FormState = {
+  showId: string
+  ticketCount: number
+  fullName: string
+  email: string
+  phoneNumber: string
+  consent: boolean
+}
+
+type FieldErrors = Partial<Record<keyof FormState, string>>
+
+type FlowStep = 'details' | 'transaction'
+
+type SubmitState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; ticketId: string }
+  | { status: 'error'; message: string }
+
+function validate(state: FormState): FieldErrors {
+  const errors: FieldErrors = {}
+
+  if (!state.showId) errors.showId = 'Please select a show.'
+  if (!state.ticketCount || state.ticketCount < 1 || state.ticketCount > 10)
+    errors.ticketCount = 'Ticket quantity must be between 1 and 10.'
+
+  if (!state.fullName.trim()) errors.fullName = 'Full name is required.'
+
+  const email = state.email.trim()
+  if (!email) errors.email = 'Email is required.'
+  else if (!/^\S+@\S+\.\S+$/.test(email)) errors.email = 'Please enter a valid email.'
+
+  const phone = state.phoneNumber.trim()
+  if (!phone) errors.phoneNumber = 'Phone number is required.'
+
+  if (!state.consent) errors.consent = 'Please confirm consent to be contacted.'
+
+  return errors
+}
+
+export default function BookingPage() {
+  const [params] = useSearchParams()
+  const preselectedShow = params.get('showId') ?? ''
+
+  const initial: FormState = useMemo(
+    () => ({
+      showId: shows.some((s) => s.id === preselectedShow) ? preselectedShow : shows[0]?.id ?? '',
+      ticketCount: 1,
+      fullName: '',
+      email: '',
+      phoneNumber: '',
+      consent: false,
+    }),
+    [preselectedShow],
+  )
+
+  const [step, setStep] = useState<FlowStep>('details')
+  const [form, setForm] = useState<FormState>(initial)
+  const [errors, setErrors] = useState<FieldErrors>({})
+  const [submit, setSubmit] = useState<SubmitState>({ status: 'idle' })
+  const [transactionId, setTransactionId] = useState('')
+
+  const selectedShow = useMemo(() => shows.find((s) => s.id === form.showId) ?? null, [form.showId])
+
+  async function startPayment(e: React.FormEvent) {
+    e.preventDefault()
+    setSubmit({ status: 'idle' })
+
+    const nextErrors = validate(form)
+    setErrors(nextErrors)
+    if (Object.keys(nextErrors).length) {
+      setSubmit({ status: 'error', message: 'Please fix the highlighted fields and try again.' })
+      return
+    }
+
+    // Placeholder stage: we "initiate" payment by calling the same placeholder endpoint.
+    // You can swap this later for a dedicated payment init endpoint.
+    setSubmit({ status: 'loading' })
+
+    try {
+      await issueTicket({
+        showId: form.showId,
+        ticketCount: form.ticketCount,
+        fullName: form.fullName.trim(),
+        email: form.email.trim(),
+        phoneNumber: form.phoneNumber.trim(),
+        consent: form.consent,
+      })
+
+      setSubmit({ status: 'idle' })
+      setStep('transaction')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong.'
+      setSubmit({ status: 'error', message })
+    }
+  }
+
+  async function submitTransaction(e: React.FormEvent) {
+    e.preventDefault()
+    setSubmit({ status: 'idle' })
+
+    const tid = transactionId.trim()
+    if (!tid) {
+      setSubmit({ status: 'error', message: 'Please enter your transaction ID to continue.' })
+      return
+    }
+
+    setSubmit({ status: 'loading' })
+
+    try {
+      // Placeholder: re-use the ticket issuing endpoint again, but include transactionId for later.
+      // Your backend can accept/ignore this for now.
+      const res = await issueTicket({
+        showId: form.showId,
+        ticketCount: form.ticketCount,
+        fullName: `${form.fullName.trim()} (TXN:${tid})`,
+        email: form.email.trim(),
+        phoneNumber: form.phoneNumber.trim(),
+        consent: form.consent,
+      })
+      setSubmit({ status: 'success', ticketId: res.ticketId })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong.'
+      setSubmit({ status: 'error', message })
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4">
+      <SectionReveal>
+        <header className="pt-8 sm:pt-10">
+          <h1 className="font-serif text-4xl text-white sm:text-5xl">{siteContent.bookingPage.pageTitle}</h1>
+          <p className="mt-3 max-w-prose text-white/70">{siteContent.bookingPage.intro}</p>
+        </header>
+      </SectionReveal>
+
+      <div className="mt-6 grid gap-6 md:mt-8 md:grid-cols-[1.2fr_0.8fr]">
+        <SectionReveal>
+          <GlassPanel className="p-6 sm:p-7 md:p-10" labelledBy="booking-form-title">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <h2 id="booking-form-title" className="font-serif text-2xl text-white">
+                {step === 'details' ? 'Your details' : 'Payment confirmation'}
+              </h2>
+              <div className="text-xs text-white/55">
+                Step {step === 'details' ? '1' : '2'} of 2
+              </div>
+            </div>
+
+            {submit.status === 'success' && (
+              <div
+                role="status"
+                className="mt-5 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100"
+              >
+                <div className="font-semibold">{siteContent.bookingPage.form.successState.title}</div>
+                <div className="mt-1 text-emerald-100/90">
+                  {siteContent.bookingPage.form.successState.message}
+                </div>
+                <div className="mt-2 text-emerald-100/90">
+                  Ticket ID: <span className="font-semibold">{submit.ticketId}</span>
+                </div>
+              </div>
+            )}
+
+            {submit.status === 'error' && (
+              <div
+                role="alert"
+                className="mt-5 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100"
+              >
+                <div className="font-semibold">{siteContent.bookingPage.form.errorState.title}</div>
+                <div className="mt-1 text-red-100/90">{submit.message}</div>
+              </div>
+            )}
+
+            {step === 'details' ? (
+              <form className="mt-6 space-y-5" onSubmit={startPayment} noValidate>
+                <div>
+                  <label className="label" htmlFor="showId">
+                    Select show
+                  </label>
+                  <select
+                    id="showId"
+                    className="field mt-2"
+                    value={form.showId}
+                    onChange={(e) => setForm((s) => ({ ...s, showId: e.target.value }))}
+                    aria-invalid={Boolean(errors.showId)}
+                    aria-describedby={errors.showId ? 'showId-error' : undefined}
+                  >
+                    {shows.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.title} — {s.dateLabel}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.showId && (
+                    <div id="showId-error" className="error mt-2">
+                      {errors.showId}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="label" htmlFor="ticketCount">
+                    Number of tickets (1–10)
+                  </label>
+                  <input
+                    id="ticketCount"
+                    className="field mt-2"
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={form.ticketCount}
+                    onChange={(e) => setForm((s) => ({ ...s, ticketCount: Number(e.target.value) }))}
+                    aria-invalid={Boolean(errors.ticketCount)}
+                    aria-describedby={errors.ticketCount ? 'ticketCount-error' : undefined}
+                  />
+                  {errors.ticketCount && (
+                    <div id="ticketCount-error" className="error mt-2">
+                      {errors.ticketCount}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid gap-5 md:grid-cols-2">
+                  <div>
+                    <label className="label" htmlFor="fullName">
+                      Full name
+                    </label>
+                    <input
+                      id="fullName"
+                      className="field mt-2"
+                      autoComplete="name"
+                      value={form.fullName}
+                      onChange={(e) => setForm((s) => ({ ...s, fullName: e.target.value }))}
+                      aria-invalid={Boolean(errors.fullName)}
+                      aria-describedby={errors.fullName ? 'fullName-error' : undefined}
+                    />
+                    {errors.fullName && (
+                      <div id="fullName-error" className="error mt-2">
+                        {errors.fullName}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="label" htmlFor="email">
+                      Email address
+                    </label>
+                    <input
+                      id="email"
+                      className="field mt-2"
+                      type="email"
+                      autoComplete="email"
+                      value={form.email}
+                      onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
+                      aria-invalid={Boolean(errors.email)}
+                      aria-describedby={errors.email ? 'email-error' : undefined}
+                    />
+                    {errors.email && (
+                      <div id="email-error" className="error mt-2">
+                        {errors.email}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label" htmlFor="phoneNumber">
+                    Phone number
+                  </label>
+                  <input
+                    id="phoneNumber"
+                    className="field mt-2"
+                    type="tel"
+                    autoComplete="tel"
+                    value={form.phoneNumber}
+                    onChange={(e) => setForm((s) => ({ ...s, phoneNumber: e.target.value }))}
+                    aria-invalid={Boolean(errors.phoneNumber)}
+                    aria-describedby={errors.phoneNumber ? 'phone-error' : undefined}
+                  />
+                  {errors.phoneNumber && (
+                    <div id="phone-error" className="error mt-2">
+                      {errors.phoneNumber}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <input
+                    id="consent"
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 rounded border-white/20 bg-white/10"
+                    checked={form.consent}
+                    onChange={(e) => setForm((s) => ({ ...s, consent: e.target.checked }))}
+                    aria-invalid={Boolean(errors.consent)}
+                    aria-describedby={errors.consent ? 'consent-error' : 'consent-hint'}
+                  />
+                  <div>
+                    <label className="label" htmlFor="consent">
+                      I agree to receive booking updates
+                    </label>
+                    <div id="consent-hint" className="hint mt-1">
+                      We’ll only use your details for booking updates.
+                    </div>
+                    {errors.consent && (
+                      <div id="consent-error" className="error mt-1">
+                        {errors.consent}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={submit.status === 'loading'}
+                  >
+                    {submit.status === 'loading' ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        Payment…
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="h-4 w-4" aria-hidden="true" />
+                        Payment
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setForm(initial)
+                      setErrors({})
+                      setTransactionId('')
+                      setStep('details')
+                      setSubmit({ status: 'idle' })
+                    }}
+                  >
+                    Reset
+                  </button>
+                </div>
+
+                <p className="text-xs text-white/55">
+                  After payment, you’ll be asked to upload/enter your transaction ID.
+                </p>
+              </form>
+            ) : (
+              <form className="mt-6 space-y-5" onSubmit={submitTransaction}>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
+                  <div className="font-semibold text-white">Payment instructions</div>
+                  <ul className="mt-2 list-disc space-y-1 pl-5">
+                    <li>Complete your payment using your preferred method.</li>
+                    <li>Copy the transaction/reference ID from your payment confirmation.</li>
+                    <li>Paste it below to confirm your booking.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <label className="label" htmlFor="transactionId">
+                    Transaction ID
+                  </label>
+                  <input
+                    id="transactionId"
+                    className="field mt-2"
+                    inputMode="text"
+                    autoComplete="off"
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    placeholder="e.g. UPI/IMPS/Bank ref number"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={submit.status === 'loading'}
+                  >
+                    {submit.status === 'loading' ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        Submitting…
+                      </>
+                    ) : (
+                      <>
+                        <ReceiptText className="h-4 w-4" aria-hidden="true" />
+                        Submit transaction ID
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setSubmit({ status: 'idle' })
+                      setStep('details')
+                    }}
+                  >
+                    Back
+                  </button>
+                </div>
+              </form>
+            )}
+          </GlassPanel>
+        </SectionReveal>
+
+        <SectionReveal delay={0.08}>
+          <GlassPanel className="p-6 sm:p-7 md:p-10" labelledBy="summary-title">
+            <h2 id="summary-title" className="font-serif text-2xl text-white">
+              Summary
+            </h2>
+
+            <div className="mt-4 space-y-3 text-sm text-white/75">
+              <div className="flex items-start justify-between gap-3">
+                <div className="text-white/60">Selected show</div>
+                <div className="text-right text-white">{selectedShow ? selectedShow.title : '—'}</div>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="text-white/60">When</div>
+                <div className="text-right text-white">{selectedShow ? selectedShow.dateLabel : '—'}</div>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="text-white/60">Where</div>
+                <div className="text-right text-white">{selectedShow ? selectedShow.venue : '—'}</div>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="text-white/60">Tickets</div>
+                <div className="text-right text-white">{form.ticketCount}</div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="text-sm font-semibold text-white">Endpoint</div>
+                <div className="mt-1 text-xs text-white/60">
+                  POST {`${import.meta.env.VITE_API_BASE_URL ?? ''}${siteContent.bookingPage.form.submit.apiEndpoint}`}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="text-sm font-semibold text-white">Status</div>
+                <div className="mt-1 text-xs text-white/60">
+                  {step === 'details' ? 'Awaiting payment initiation' : 'Awaiting transaction ID'}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-white/50">
+                <Ticket className="h-4 w-4" aria-hidden="true" />
+                Tickets are issued after transaction ID submission.
+              </div>
+            </div>
+          </GlassPanel>
+        </SectionReveal>
+      </div>
+    </div>
+  )
+}
