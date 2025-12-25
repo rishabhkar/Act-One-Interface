@@ -107,6 +107,7 @@ export type SiteContent = {
       city: string
       email: string
       phone: string
+      phone2?: string
       whatsapp: string
       mapEmbedUrl: string
     }
@@ -117,6 +118,10 @@ export type SiteContent = {
     contact: { address: string; email: string; phone: string }
     social: Array<{ label: string; href: string }>
     copyright: string
+    credits?: {
+      developer?: string
+      music?: string
+    }
   }
   pastProductions: {
     title: string
@@ -148,15 +153,17 @@ export const siteContent: SiteContent = {
       { label: 'Home', href: '/' },
       { label: 'Shows', href: '/shows' },
       { label: 'Book', href: '/book' },
+      { label: 'Gallery', href: '/gallery' },
+      { label: 'Previous shows', href: '/previous-shows' },
       { label: 'Contact', href: '/contact' },
     ],
   },
   homePage: {
     hero: {
       eyebrow: 'PRARAMBH THEATRE GROUP',
-      headline: 'Premium theatre nights—crafted with velvet, light, and silence.',
+      headline: 'Premium theatre nights—where velvet, light, and silence conspire.',
       subcopy:
-        'A socio-cultural organisation and public charitable trust dedicated to promoting theatre while addressing important social issues through stage plays and community education.',
+        'A socio-cultural organisation and public charitable trust devoted to theatre—and to the social questions it can hold. We stage stories that raise awareness in women’s rights, child welfare, the environment, and community education.',
       ctaPrimary: { label: 'Book tickets', href: '/book' },
       ctaSecondary: { label: 'Explore shows', href: '/shows' },
       centerMedia: {
@@ -172,7 +179,7 @@ export const siteContent: SiteContent = {
       { value: 'Intimate', label: 'Studio venues', note: 'Chittranjan Park' },
     ],
     aboutOurCraftPanel: {
-      title: 'About our craft',
+      title: 'Our craft, in three acts',
       columns: [
         {
           title: 'Mission',
@@ -190,7 +197,7 @@ export const siteContent: SiteContent = {
     },
     bannerPanel: {
       leftTitle: 'Workshops',
-      leftText: 'Actor training · Stage presence · Devising labs—monthly.',
+      leftText: 'Actor training · Stage presence · Devising labs—monthly, built in the rehearsal room.',
       rightCta: { label: 'Contact us', href: '/contact' },
     },
     upcomingShowsSection: {
@@ -199,12 +206,12 @@ export const siteContent: SiteContent = {
       showCards: [
         {
           id: 'show-1',
-          title: 'Chorabali + Gobhir Asukh (Double Bill)',
+          title: 'Chorabali & Gobhir Asukh',
           description:
             'A socially conscious double bill — two one-act Bengali plays presented as a single premium theatre night.',
-          dateText: '[Sunday, 8th February 2026 · 18:00]',
-          venueText: '[Muktadhara Auditorium, Gole Market, New Delhi]',
-          priceText: '[₹PRICE · TOTAL DURATION mins]',
+          dateText: 'Sunday, 8th February 2026 · 6:00 PM',
+          venueText: 'Muktadhara Auditorium, Gole Market, New Delhi',
+          priceText: '[₹ 250 · 2 Hours 30 Mins]',
           ctaPrimary: { label: 'Book tickets', href: '/book?showId=show-1' },
           ctaSecondary: { label: 'View all', href: '/shows' },
         },
@@ -242,8 +249,8 @@ export const siteContent: SiteContent = {
     shows: [
       {
         id: 'show-1',
-        title: 'Chorabali + Gobhir Asukh (Double Bill)',
-        tagline: 'Double Bill · Two One-Act Plays',
+        title: 'Chorabali & Gobhir Asukh',
+        tagline: 'Two One-Act Plays',
         language: 'Bengali',
         genre: '[TBD]',
         durationMins: '[TBD]',
@@ -273,9 +280,9 @@ export const siteContent: SiteContent = {
   },
   bookingPage: {
     pageTitle: 'Book tickets',
-    intro: 'Fill your details and confirm your booking.',
+    intro: 'Share your details, proceed to payment, then enter your transaction ID to confirm your seats.',
     form: {
-      submit: { label: 'Confirm booking', apiEndpoint: '/api/tickets/issue' },
+      submit: { label: 'Payment', apiEndpoint: '/api/tickets/issue' },
       successState: {
         title: 'Booking confirmed',
         message: 'Your ticket has been issued. Please check your email for the e-invite and QR code.',
@@ -292,8 +299,9 @@ export const siteContent: SiteContent = {
       city: 'Greater Noida West',
       email: 'prarambh@gmail.com',
       phone: '+91-9818620738',
+      phone2: '',
       whatsapp: '[Optional TBD]',
-      mapEmbedUrl: '[TBD]',
+      mapEmbedUrl: 'https://share.google/6riV0u9dlmwr0tV5r',
     },
     social: [
       { label: 'Instagram', href: '[TBD]' },
@@ -316,6 +324,10 @@ export const siteContent: SiteContent = {
       { label: 'GitHub', href: '[Optional TBD]' },
     ],
     copyright: '© [YEAR] Prarambh Theatre Group',
+    credits: {
+      developer: 'Designed and Developed by Rishabh Kar',
+      music: 'Background music by Scott Buckley',
+    },
   },
   pastProductions: {
     title: 'Past productions',

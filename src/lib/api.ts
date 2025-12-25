@@ -1,28 +1,31 @@
 import { siteContent } from '../content/siteContent'
 
 export type IssueTicketRequest = {
-  showId: string
-  ticketCount: number
+  showName?: string | null
   fullName: string
   email: string
   phoneNumber: string
-  consent: boolean
+  ticketCount?: number | null
+  transactionID: string
 }
 
 export type IssueTicketResponse = {
   ticketId: string
+  status?: string
+  barcodeId?: string
+  showId?: string
+  showName?: string
+  ticketCount?: number
+  ticketIds?: string[]
+  barcodeIds?: string[]
 }
 
 export async function issueTicket(payload: IssueTicketRequest): Promise<IssueTicketResponse> {
-  const base = import.meta.env.VITE_API_BASE_URL
-  if (!base) {
-    // Keep the app runnable without env config.
-    // We still attempt a relative call so dev proxy/backends can work.
-    // (No console warning to keep lint clean.)
-  }
+  // Default to local backend for now; can be overridden later via env.
+  const base = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:8080'
 
   const path = siteContent.bookingPage.form.submit.apiEndpoint || '/api/tickets/issue'
-  const url = `${base ?? ''}${path}`
+  const url = `${base}${path}`
 
   const res = await fetch(url, {
     method: 'POST',

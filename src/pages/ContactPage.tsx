@@ -1,20 +1,7 @@
-import { Facebook, Instagram, Mail, MapPin, Phone, Youtube } from 'lucide-react'
+import { ExternalLink, Mail, MapPin, Phone } from 'lucide-react'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { siteContent } from '../content/siteContent'
-
-function SocialIcon({ label }: { label: string }) {
-  switch (label.toLowerCase()) {
-    case 'facebook':
-      return <Facebook className="h-4 w-4" aria-hidden="true" />
-    case 'instagram':
-      return <Instagram className="h-4 w-4" aria-hidden="true" />
-    case 'youtube':
-      return <Youtube className="h-4 w-4" aria-hidden="true" />
-    default:
-      return <Instagram className="h-4 w-4" aria-hidden="true" />
-  }
-}
 
 export default function ContactPage() {
   const { contactDetails, social } = siteContent.contactPage
@@ -23,15 +10,15 @@ export default function ContactPage() {
   return (
     <div className="mx-auto max-w-6xl px-4">
       <SectionReveal>
-        <header className="pt-10">
-          <h1 className="font-serif text-4xl text-white md:text-5xl">{siteContent.contactPage.pageTitle}</h1>
+        <header className="pt-8 sm:pt-10">
+          <h1 className="font-serif text-4xl text-white sm:text-5xl">{siteContent.contactPage.pageTitle}</h1>
           <p className="mt-3 max-w-prose text-white/70">{siteContent.contactPage.intro}</p>
         </header>
       </SectionReveal>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
+      <div className="mt-6 grid gap-6 md:mt-8 md:grid-cols-2">
         <SectionReveal>
-          <GlassPanel className="p-7 md:p-10" labelledBy="contact-details">
+          <GlassPanel className="p-6 sm:p-7 md:p-10" labelledBy="contact-details">
             <h2 id="contact-details" className="font-serif text-2xl text-white">
               Details
             </h2>
@@ -56,6 +43,14 @@ export default function ContactPage() {
                   {contactDetails.phone}
                 </a>
               </li>
+              {contactDetails.phone2 && contactDetails.phone2.trim() && (
+                <li className="flex items-center gap-3">
+                  <Phone className="h-4 w-4 text-white/70" aria-hidden="true" />
+                  <a className="hover:text-white" href={`tel:${contactDetails.phone2}`}>
+                    {contactDetails.phone2}
+                  </a>
+                </li>
+              )}
             </ul>
 
             <div className="mt-8">
@@ -72,55 +67,44 @@ export default function ContactPage() {
                       rel="noreferrer"
                       aria-label={s.label}
                     >
-                      <SocialIcon label={s.label} />
                       {s.label}
                     </a>
                   ))}
               </div>
-              {social.some((s) => s.href.includes('[TBD]')) && (
-                <p className="mt-3 text-xs text-white/55">
-                  Some social links are marked TBD in content and are hidden until set.
-                </p>
-              )}
             </div>
           </GlassPanel>
         </SectionReveal>
 
         <SectionReveal delay={0.08}>
-          <GlassPanel className="p-7 md:p-10" labelledBy="map-placeholder">
-            <h2 id="map-placeholder" className="font-serif text-2xl text-white">
+          <GlassPanel className="p-6 sm:p-7 md:p-10" labelledBy="map-panel">
+            <h2 id="map-panel" className="font-serif text-2xl text-white">
               Map
             </h2>
 
             <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-black/30">
-              <div className="aspect-[16/10] w-full">
+              <div className="flex min-h-[220px] flex-col items-center justify-center gap-3 p-6 text-center">
+                <div className="text-sm text-white/70">
+                  Map embedding can be blocked by Google for share links.
+                </div>
                 {hasMap ? (
-                  <iframe
-                    title="Prarambh Theatre Group location"
-                    className="h-full w-full"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    src={`https://www.google.com/maps?q=${encodeURIComponent(
-                      contactDetails.mapEmbedUrl,
-                    )}&output=embed`}
-                  />
+                  <a
+                    className="btn-secondary inline-flex items-center gap-2 px-4 py-2"
+                    href={contactDetails.mapEmbedUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open map <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                  </a>
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-sm text-white/60">
-                    Embedded map placeholder (add mapEmbedUrl later)
-                  </div>
+                  <div className="text-sm text-white/60">Map link not set.</div>
                 )}
               </div>
             </div>
 
             {hasMap && (
-              <a
-                className="mt-4 inline-flex items-center gap-2 text-sm text-white/75 hover:text-white"
-                href={contactDetails.mapEmbedUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open in Google Maps
-              </a>
+              <div className="mt-4 text-xs text-white/55 break-all">
+                {contactDetails.mapEmbedUrl}
+              </div>
             )}
           </GlassPanel>
         </SectionReveal>
