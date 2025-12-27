@@ -211,7 +211,7 @@ export const siteContent: SiteContent = {
             'A socially conscious double bill — two one-act Bengali plays presented as a single premium theatre night.',
           dateText: 'Sunday, 8th February 2026 · 6:00 PM',
           venueText: 'Muktadhara Auditorium, Gole Market, New Delhi',
-          priceText: '[₹ 250 · 2 Hours 30 Mins]',
+          priceText: '₹ 250 · 2 Hours 30 Mins',
           ctaPrimary: { label: 'Book tickets', href: '/book?showId=show-1' },
           ctaSecondary: { label: 'View all', href: '/shows' },
         },
