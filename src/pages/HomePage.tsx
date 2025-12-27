@@ -1,4 +1,5 @@
 import { ArrowRight, ExternalLink } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
@@ -7,31 +8,57 @@ import { siteContent } from '../content/siteContent'
 const logoVideoUrl = new URL('/media/logo.webm', import.meta.url).toString()
 const logoPngUrl = new URL('/media/logo.png', import.meta.url).toString()
 
+function usePrefersStaticHero() {
+  const [prefersStatic, setPrefersStatic] = useState(() =>
+    typeof window === 'undefined' ? true : window.matchMedia('(max-width: 768px)').matches,
+  )
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const media = window.matchMedia('(max-width: 768px)')
+    const update = () => setPrefersStatic(media.matches)
+    update()
+    if (typeof media.addEventListener === 'function') media.addEventListener('change', update)
+    else media.addListener(update)
+    return () => {
+      if (typeof media.removeEventListener === 'function') media.removeEventListener('change', update)
+      else media.removeListener(update)
+    }
+  }, [])
+
+  return prefersStatic
+}
+
 function HeroLogo() {
   const caption = siteContent.homePage.hero.centerMedia.caption
+  const prefersStatic = usePrefersStaticHero()
 
   return (
     <div className="mx-auto flex w-full max-w-[360px] flex-col items-center">
       <div className="relative w-full">
         <div className="absolute inset-0 -z-10 rounded-[32px] bg-[radial-gradient(circle_at_center,rgba(255,106,26,0.22),transparent_60%)] blur-2xl" />
 
-        {/* Video with graceful fallback to PNG */}
-        <video
-          className="mx-auto w-full max-w-[360px] rounded-3xl opacity-95 motion-safe:animate-floaty"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          poster={logoPngUrl}
-          onError={() => {
-            // Intentionally empty: poster fallback covers failed video load.
-          }}
-        >
-          <source src={logoVideoUrl} type="video/webm" />
-        </video>
+        {prefersStatic ? (
+          <img
+            src={logoPngUrl}
+            alt={siteContent.brand.logoAlt}
+            className="mx-auto w-full max-w-[360px] rounded-3xl"
+            decoding="async"
+          />
+        ) : (
+          <video
+            className="mx-auto w-full max-w-[360px] rounded-3xl opacity-95 motion-safe:animate-floaty"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            poster={logoPngUrl}
+          >
+            <source src={logoVideoUrl} type="video/webm" />
+          </video>
+        )}
 
-        {/* Fallback image for no-JS */}
         <noscript>
           <img
             src={logoPngUrl}

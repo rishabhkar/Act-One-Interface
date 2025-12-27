@@ -37,6 +37,15 @@ export default function Footer() {
                   {siteContent.contactPage.contactDetails.phone}
                 </a>
               </li>
+              {siteContent.contactPage.contactDetails.phone2 &&
+                siteContent.contactPage.contactDetails.phone2.trim() && (
+                  <li className="flex items-center gap-3">
+                    <Phone className="h-4 w-4 text-white/70" aria-hidden="true" />
+                    <a className="hover:text-white" href={`tel:${siteContent.contactPage.contactDetails.phone2}`}>
+                      {siteContent.contactPage.contactDetails.phone2}
+                    </a>
+                  </li>
+                )}
             </ul>
           </div>
 
@@ -65,9 +74,13 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/55 md:flex-row md:items-center md:justify-between">
-          <div>{copyright}</div>
-          <div>Built for Firebase Hosting · Spark plan ready</div>
+        <div className="mt-10 grid gap-2 border-t border-white/10 pt-6 text-xs text-white/55 md:grid-cols-2 md:items-start">
+          <div className="space-y-1">
+            <div>{copyright}</div>
+            {siteContent.footer.credits?.developer && <div>{siteContent.footer.credits.developer}</div>}
+            {siteContent.footer.credits?.music && <div>{siteContent.footer.credits.music}</div>}
+          </div>
+          <div className="md:text-right">Built for Firebase Hosting · Spark plan ready</div>
         </div>
       </div>
     </footer>
