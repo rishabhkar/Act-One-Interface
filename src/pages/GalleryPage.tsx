@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
-import { playGallerySections, type PlayGallerySection } from '../data/galleryImages'
+import { playGallerySections } from '../data/galleryImages'
+import { useGlassGradientFromImg } from '../lib/useGlassGradientFromImg'
 
 function clampIndex(i: number, len: number) {
   if (len <= 0) return 0
@@ -22,9 +23,20 @@ function PlayGallerySection({
   const [index, setIndex] = useState(0)
   const active = images.length ? images[clampIndex(index, images.length)] : null
 
+  const activeImgRef = useRef<HTMLImageElement | null>(null)
+  const glassGradient = useGlassGradientFromImg(activeImgRef, { cacheKey: active?.src, enabled: true })
+
   return (
     <SectionReveal>
-      <GlassPanel className="p-4 sm:p-6 text-justify" labelledBy={`gallery-${title}`}>
+      <GlassPanel
+        className="p-4 sm:p-6 text-justify"
+        labelledBy={`gallery-${title}`}
+        style={
+          glassGradient
+            ? ({ ['--glass-gradient']: glassGradient } as React.CSSProperties)
+            : undefined
+        }
+      >
         <div className="flex flex-col gap-4">
           {/* Title + buttons */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -72,6 +84,7 @@ function PlayGallerySection({
             <div className="flex items-center justify-center">
               {active ? (
                 <img
+                  ref={activeImgRef}
                   src={active.src}
                   alt={active.alt}
                   className="max-h-[70vh] w-auto max-w-full object-contain"
