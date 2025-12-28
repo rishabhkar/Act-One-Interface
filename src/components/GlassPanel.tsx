@@ -1,10 +1,11 @@
-import type { ElementType, PropsWithChildren } from 'react'
+import type { ElementType, PropsWithChildren, CSSProperties } from 'react'
 import clsx from 'clsx'
 
 export type GlassPanelProps = PropsWithChildren<{
   className?: string
   as?: ElementType
   labelledBy?: string
+  style?: CSSProperties
 }>
 
 export default function GlassPanel({
@@ -12,6 +13,7 @@ export default function GlassPanel({
   className,
   children,
   labelledBy,
+  style,
 }: GlassPanelProps) {
   const Comp = (as ?? 'section') as ElementType
 
@@ -19,6 +21,7 @@ export default function GlassPanel({
     <Comp
       className={clsx('glass film-grain', className)}
       aria-labelledby={labelledBy}
+      style={style}
     >
       {children}
     </Comp>

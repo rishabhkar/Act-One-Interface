@@ -13,6 +13,9 @@
   --haze-b: rgba(45, 92, 255, 0.58);
   --haze-a2: rgba(255, 155, 90, 0.2);
   --haze-b2: rgba(20, 70, 255, 0.18);
+
+  /* Default glass gradient (can be overridden per-card via --glass-gradient). */
+  --glass-gradient: linear-gradient(145deg, rgba(255, 126, 52, 0.32), rgba(20, 62, 150, 0.42));
 }
 
 html,
@@ -37,8 +40,64 @@ body {
 
 @layer components {
   .glass {
-    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 18px 40px rgba(0, 0, 0, 0.55);
+    position: relative;
+    overflow: hidden;
+    @apply rounded-2xl border border-white/18 backdrop-blur-3xl;
+    backdrop-filter: blur(36px) saturate(175%);
+
+    /* Darker base so the background reads dark through the glass */
+    /* nudged base alpha a bit darker */
+    background-color: rgba(2, 4, 8, 0.90);
+
+    /* Make the panel ~20% darker overall by strengthening the top transparent-black overlay */
+    /* stronger transparent black overlay so the outer rectangle reads darker but still shows gradient */
+    background-image:
+      linear-gradient(rgba(0,0,0,0.44), rgba(0,0,0,0.44)),
+      var(--glass-gradient),
+      radial-gradient(180% 140% at 85% 85%, rgba(0, 6, 22, 0.98), rgba(0, 0, 0, 0) 36%),
+      radial-gradient(200% 140% at 12% 18%, rgba(8, 24, 110, 0.56), rgba(0, 0, 0, 0) 50%),
+      linear-gradient(180deg, rgba(6, 8, 14, 0.24), rgba(6, 8, 14, 0.06));
+
+    background-repeat: no-repeat;
+    background-blend-mode: multiply, normal, multiply, multiply, overlay;
+
+    box-shadow: 0 28px 120px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.02);
+  }
+
+  /* Reflection highlight (single overlay so it reads as glass, without washing out) */
+  .glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      linear-gradient(125deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 28%, rgba(255, 255, 255, 0.00) 55%),
+      radial-gradient(90% 70% at 20% 10%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.00) 60%);
+    opacity: 0.65;
+  }
+
+  .glass::after {
+    content: none;
+  }
+
+  /* Subtle film grain overlay used by GlassPanel */
+  .film-grain {
+    position: relative;
+    overflow: hidden;
+  }
+  .film-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 2px),
+      radial-gradient(circle at 80% 40%, rgba(0, 0, 0, 0.07), rgba(0, 0, 0, 0) 2px);
+    filter: blur(0.8px);
   }
 
   /* Use `.btn` directly in markup; don't `@apply` it from other classes in Tailwind v4. */

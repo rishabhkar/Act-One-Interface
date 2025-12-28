@@ -2,6 +2,15 @@ import SectionReveal from '../components/SectionReveal'
 import GlassPanel from '../components/GlassPanel'
 import { previousShows } from '../data/previousShows'
 
+const gradients = [
+  '135deg, rgba(255, 140, 60, 0.55) 0%, rgba(0, 6, 24, 0.98) 45%',
+  '210deg, rgba(255, 150, 70, 0.55) 0%, rgba(0, 8, 28, 0.98) 40%',
+  '160deg, rgba(255, 130, 54, 0.55) 0%, rgba(0, 8, 30, 0.98) 45%',
+  '250deg, rgba(255, 145, 64, 0.55) 0%, rgba(0, 6, 24, 0.99) 40%',
+  '120deg, rgba(255, 120, 50, 0.55) 0%, rgba(0, 10, 34, 0.98) 45%',
+  '300deg, rgba(255, 155, 74, 0.55) 0%, rgba(0, 5, 20, 0.99) 40%',
+]
+
 function InfoItem({ label, value }: { label: string; value?: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -39,9 +48,18 @@ export default function PreviousShowsPage() {
               { label: 'Credits', value: show.credits },
             ]
 
+            const gradient = gradients[idx % gradients.length]
+
             return (
               <SectionReveal key={show.id} delay={Math.min(idx * 0.06, 0.2)}>
-                <GlassPanel className="p-4 sm:p-6">
+                <GlassPanel
+                  className="p-4 sm:p-6"
+                  style={{
+                    // TS: allow a CSS custom property for per-card gradient.
+                    // Use index signature on CSSProperties to avoid `any`.
+                    ...( { ['--glass-gradient']: `linear-gradient(${gradient})` } as React.CSSProperties ),
+                  }}
+                >
                   <div className="grid gap-6 md:grid-cols-[1.6fr_0.9fr] md:items-start">
                     <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-3">
                       <div className="flex items-center justify-center">
@@ -57,9 +75,6 @@ export default function PreviousShowsPage() {
                     <div className="flex flex-col gap-4">
                       <div>
                         <h2 className="font-serif text-2xl text-white sm:text-3xl">{show.title}</h2>
-                        <p className="mt-2 text-sm text-white/70">
-                          <span className="text-white/85">Details placeholder:</span> We’ll keep filling these in as we archive more productions.
-                        </p>
                       </div>
 
                       <dl className="grid gap-3 text-sm text-white/70">
@@ -79,10 +94,6 @@ export default function PreviousShowsPage() {
                           </>
                         )}
                       </dl>
-
-                      <div className="text-xs text-white/50">
-                        You can replace these placeholders with real metadata once available.
-                      </div>
                     </div>
                   </div>
                 </GlassPanel>
