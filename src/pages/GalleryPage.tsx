@@ -13,19 +13,22 @@ function clampIndex(i: number, len: number) {
 function PlayGallerySection({
   title,
   images,
+  synopsis,
 }: {
   title: string
   images: { id: string; src: string; alt: string }[]
+  synopsis?: string
 }) {
   const [index, setIndex] = useState(0)
   const active = images.length ? images[clampIndex(index, images.length)] : null
 
   return (
     <SectionReveal>
-      <GlassPanel className="p-4 sm:p-6" labelledBy={`gallery-${title}`}>
+      <GlassPanel className="p-4 sm:p-6 text-justify" labelledBy={`gallery-${title}`}>
         <div className="flex flex-col gap-4">
+          {/* Title + buttons */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+            <div className="min-w-0">
               <h2 id={`gallery-${title}`} className="font-serif text-2xl text-white sm:text-3xl">
                 {title}
               </h2>
@@ -34,7 +37,7 @@ function PlayGallerySection({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 sm:mt-6">
               <button
                 type="button"
                 className="btn-secondary px-3 py-2"
@@ -57,6 +60,13 @@ function PlayGallerySection({
               </button>
             </div>
           </div>
+
+          {/* Synopsis full width */}
+          {synopsis && (
+            <p className="max-w-none w-full whitespace-normal text-sm leading-relaxed text-white/70 text-justify">
+              {synopsis}
+            </p>
+          )}
 
           <div className="rounded-2xl border border-white/10 bg-black/30 p-3">
             <div className="flex items-center justify-center">
@@ -114,7 +124,12 @@ export default function GalleryPage() {
       <section className="mt-8 pb-6">
         <div className="grid gap-6">
           {sections.map((section) => (
-            <PlayGallerySection key={section.id} title={section.title} images={section.images} />
+            <PlayGallerySection
+              key={section.id}
+              title={section.title}
+              synopsis={section.synopsis}
+              images={section.images}
+            />
           ))}
         </div>
       </section>

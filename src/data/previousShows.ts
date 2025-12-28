@@ -37,6 +37,12 @@ export const previousShows: PreviousShow[] = [
     id: 'chup-adalat-cholche',
     title: 'Chup Adalat Cholche',
     imageSrc: new URL('./images/previousCards/Chup Adalat Cholche.jpg', import.meta.url).href,
+    date: '2nd and 3rd December 2023',
+    venue: 'Muktadhara Auditorium',
+    writtenBy: 'Vijay Tendulkar',
+    translationBy: 'Smt. Shukla Basu (Sen)',
+    direction: 'Rabi Shankar Kar',
+    language: 'Bengali',
   },
   {
     id: 'daag',

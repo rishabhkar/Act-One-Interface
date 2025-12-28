@@ -3,12 +3,7 @@ import GlassPanel from '../components/GlassPanel'
 import { previousShows } from '../data/previousShows'
 
 const gradients = [
-  '135deg, rgba(255, 140, 60, 0.55) 0%, rgba(0, 6, 24, 0.98) 45%',
-  '210deg, rgba(255, 150, 70, 0.55) 0%, rgba(0, 8, 28, 0.98) 40%',
-  '160deg, rgba(255, 130, 54, 0.55) 0%, rgba(0, 8, 30, 0.98) 45%',
-  '250deg, rgba(255, 145, 64, 0.55) 0%, rgba(0, 6, 24, 0.99) 40%',
-  '120deg, rgba(255, 120, 50, 0.55) 0%, rgba(0, 10, 34, 0.98) 45%',
-  '300deg, rgba(255, 155, 74, 0.55) 0%, rgba(0, 5, 20, 0.99) 40%',
+  '267deg, rgba(255, 150, 90, 0.30) 0%, rgba(120, 95, 120, 0.22) 28%, rgba(40, 55, 95, 0.32) 52%, rgba(0, 10, 55, 0.75) 78%, rgba(0, 6, 24, 0.90) 100%',
 ]
 
 function InfoItem({ label, value }: { label: string; value?: string }) {
