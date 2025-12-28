@@ -122,7 +122,16 @@ export default function HomePage() {
       </section>
 
       <SectionReveal>
-        <GlassPanel className="p-7 md:p-10" labelledBy="about-heading">
+        <GlassPanel
+          className="p-7 md:p-10"
+          labelledBy="about-heading"
+          style={
+            ({
+              ['--glass-gradient']:
+                'linear-gradient(220deg, rgba(255, 106, 26, 0.26) 0%, rgba(255, 106, 26, 0.12) 40%, rgba(255, 106, 26, 0.00) 78%)',
+            } as React.CSSProperties)
+          }
+        >
           <h2 id="about-heading" className="font-serif text-2xl text-white md:text-3xl">
             {aboutOurCraftPanel.title}
           </h2>
@@ -155,7 +164,17 @@ export default function HomePage() {
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           {siteContent.homePage.upcomingShowsSection.showCards.map((card, idx) => (
             <SectionReveal key={card.id} delay={Math.min(idx * 0.06, 0.18)}>
-              <GlassPanel as="article" className="p-6 md:p-8" labelledBy={`home-show-${card.id}`}>
+              <GlassPanel
+                as="article"
+                className="p-6 md:p-8"
+                labelledBy={`home-show-${card.id}`}
+                style={
+                  ({
+                    ['--glass-gradient']:
+                      `linear-gradient(${[245, 205, 165, 125][idx % 4]}deg, rgba(255, 106, 26, 0.28) 0%, rgba(255, 106, 26, 0.12) 42%, rgba(255, 106, 26, 0.00) 80%)`,
+                  } as React.CSSProperties)
+                }
+              >
                 <h3 id={`home-show-${card.id}`} className="font-serif text-xl text-white">
                   {card.title}
                 </h3>
@@ -201,7 +220,17 @@ export default function HomePage() {
         <div className="mt-6 grid gap-6">
           {pressAndReviewsSection.items.map((item, idx) => (
             <SectionReveal key={item.id} delay={Math.min(idx * 0.06, 0.2)}>
-              <GlassPanel as="article" className="p-7 md:p-10" labelledBy={item.id}>
+              <GlassPanel
+                as="article"
+                className="p-7 md:p-10"
+                labelledBy={item.id}
+                style={
+                  ({
+                    ['--glass-gradient']:
+                      `linear-gradient(${[260, 210, 160, 120, 300][idx % 5]}deg, rgba(255, 106, 26, 0.22) 0%, rgba(255, 106, 26, 0.10) 40%, rgba(255, 106, 26, 0.00) 78%)`,
+                  } as React.CSSProperties)
+                }
+              >
                 <h3 id={item.id} className="text-lg font-semibold text-white">
                   {item.headline}
                 </h3>
