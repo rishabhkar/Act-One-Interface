@@ -185,6 +185,26 @@ body {
 }
 
 @layer utilities {
+  /* Home hero logo glow pulse (used by HomePage). */
+  @keyframes heroGlowPulse {
+    0%,
+    100% {
+      transform: scale(0.92);
+      opacity: 0.75;
+      filter: blur(56px);
+    }
+    50% {
+      transform: scale(1.12);
+      opacity: 1;
+      filter: blur(76px);
+    }
+  }
+
+  .animate-hero-glow {
+    animation: heroGlowPulse 2.8s ease-in-out infinite;
+    will-change: transform, opacity, filter;
+  }
+
   /* Subtle film grain + vignette overlay. Lightweight: one fixed element via pseudo classes. */
   .theatre-grain {
     position: fixed;
