@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { siteContent } from '../content/siteContent'
+import heroLogoGif from '../data/video/Logo Image.gif'
 
 const logoVideoUrl = new URL('/media/logo.webm', import.meta.url).toString()
 const logoPngUrl = new URL('/media/logo.png', import.meta.url).toString()
@@ -36,36 +37,24 @@ function HeroLogo() {
   return (
     <div className="mx-auto flex w-full max-w-[360px] flex-col items-center">
       <div className="relative w-full">
-        <div className="absolute inset-0 -z-10 rounded-[32px] bg-[radial-gradient(circle_at_center,rgba(255,106,26,0.22),transparent_60%)] blur-2xl" />
+        {/* Larger-radius cyan glow behind the logo */}
+        <div className="absolute inset-0 -z-10 rounded-[32px] blur-3xl animate-hero-glow bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.72)_0%,rgba(34,211,238,0.30)_45%,transparent_90%)]" />
 
-        {prefersStatic ? (
-          <img
-            src={logoPngUrl}
-            alt={siteContent.brand.logoAlt}
-            className="mx-auto w-full max-w-[360px] rounded-3xl"
-            decoding="async"
-          />
-        ) : (
-          <video
-            className="mx-auto w-full max-w-[360px] rounded-3xl opacity-95 motion-safe:animate-floaty"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            poster={logoPngUrl}
-          >
+        {/* Animated logo (GIF) */}
+        <img
+          src={heroLogoGif}
+          alt={siteContent.brand.logoAlt}
+          className="mx-auto w-full max-w-[360px] rounded-3xl opacity-95"
+          decoding="async"
+          loading="eager"
+        />
+
+        {/* Keep the old transparent-logo slot for future use (post-processed webm) */}
+        {prefersStatic ? null : (
+          <video className="hidden" autoPlay loop muted playsInline preload="metadata" poster={logoPngUrl}>
             <source src={logoVideoUrl} type="video/webm" />
           </video>
         )}
-
-        <noscript>
-          <img
-            src={logoPngUrl}
-            alt={siteContent.brand.logoAlt}
-            className="mx-auto w-full max-w-[360px] rounded-3xl"
-          />
-        </noscript>
       </div>
 
       <p className="mt-4 text-center text-xs uppercase tracking-[0.35em] text-white/60">{caption}</p>
@@ -114,15 +103,20 @@ export default function HomePage() {
 
         <SectionReveal delay={0.1}>
           <HeroLogo />
-          <p className="mx-auto mt-3 max-w-[360px] text-center text-sm text-white/65">
-            Add your transparent video at <code className="text-white/85">public/media/logo.webm</code>{' '}
-            and a fallback at <code className="text-white/85">public/media/logo.png</code>.
-          </p>
         </SectionReveal>
       </section>
 
       <SectionReveal>
-        <GlassPanel className="p-7 md:p-10" labelledBy="about-heading">
+        <GlassPanel
+          className="p-7 md:p-10"
+          labelledBy="about-heading"
+          style={
+            ({
+              ['--glass-gradient']:
+                'linear-gradient(220deg, rgba(255, 106, 26, 0.26) 0%, rgba(255, 106, 26, 0.12) 40%, rgba(255, 106, 26, 0.00) 78%)',
+            } as React.CSSProperties)
+          }
+        >
           <h2 id="about-heading" className="font-serif text-2xl text-white md:text-3xl">
             {aboutOurCraftPanel.title}
           </h2>
@@ -155,7 +149,17 @@ export default function HomePage() {
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           {siteContent.homePage.upcomingShowsSection.showCards.map((card, idx) => (
             <SectionReveal key={card.id} delay={Math.min(idx * 0.06, 0.18)}>
-              <GlassPanel as="article" className="p-6 md:p-8" labelledBy={`home-show-${card.id}`}>
+              <GlassPanel
+                as="article"
+                className="p-6 md:p-8"
+                labelledBy={`home-show-${card.id}`}
+                style={
+                  ({
+                    ['--glass-gradient']:
+                      `linear-gradient(${[245, 205, 165, 125][idx % 4]}deg, rgba(255, 106, 26, 0.28) 0%, rgba(255, 106, 26, 0.12) 42%, rgba(255, 106, 26, 0.00) 80%)`,
+                  } as React.CSSProperties)
+                }
+              >
                 <h3 id={`home-show-${card.id}`} className="font-serif text-xl text-white">
                   {card.title}
                 </h3>
@@ -201,7 +205,17 @@ export default function HomePage() {
         <div className="mt-6 grid gap-6">
           {pressAndReviewsSection.items.map((item, idx) => (
             <SectionReveal key={item.id} delay={Math.min(idx * 0.06, 0.2)}>
-              <GlassPanel as="article" className="p-7 md:p-10" labelledBy={item.id}>
+              <GlassPanel
+                as="article"
+                className="p-7 md:p-10"
+                labelledBy={item.id}
+                style={
+                  ({
+                    ['--glass-gradient']:
+                      `linear-gradient(${[260, 210, 160, 120, 300][idx % 5]}deg, rgba(255, 106, 26, 0.22) 0%, rgba(255, 106, 26, 0.10) 40%, rgba(255, 106, 26, 0.00) 78%)`,
+                  } as React.CSSProperties)
+                }
+              >
                 <h3 id={item.id} className="text-lg font-semibold text-white">
                   {item.headline}
                 </h3>
