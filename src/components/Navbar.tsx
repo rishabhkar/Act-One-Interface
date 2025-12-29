@@ -88,16 +88,16 @@ export default function Navbar() {
         <div
           className="mt-4 rounded-2xl border border-white/10 bg-black/20 backdrop-blur-xl"
           style={{
-            // multi-stop deep blue gradient (left-to-right), fades before the nav links
+            // glassy multi-stop deep blues with a subtle grey fade on the right, no orange
             backgroundImage:
-              'linear-gradient(90deg, rgba(4,12,28,0.92) 0%, rgba(10,28,60,0.85) 24%, rgba(18,54,110,0.70) 45%, rgba(28,76,140,0.55) 60%, rgba(10,24,52,0.20) 72%, rgba(0,0,0,0) 82%)',
-            backgroundBlendMode: 'overlay',
+              'linear-gradient(90deg, rgba(6,14,32,0.95) 0%, rgba(16,40,90,0.86) 18%, rgba(30,76,140,0.70) 38%, rgba(26,52,96,0.48) 58%, rgba(18,28,44,0.24) 72%, rgba(18,18,24,0.12) 84%, rgba(0,0,0,0) 92%), linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0) 78%)',
+            backgroundBlendMode: 'overlay, normal',
           }}
         >
-          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2">
             <NavLink to="/" className="flex items-center gap-2 text-white min-w-0">
               {/* Brand container (no glow) */}
-              <span className="relative inline-flex items-center px-3 py-2 min-w-0">
+              <span className="relative inline-flex items-center px-2.5 py-1.5 min-w-0">
                 {/* responsive logo sizing */}
                 <img
                   src={smallLogoUrl}
@@ -105,7 +105,7 @@ export default function Navbar() {
                   className="h-10 w-auto md:h-12 relative z-10 flex-shrink-0"
                 />
                 <span className="ml-3 flex flex-col leading-none relative z-10 min-w-0">
-                  <span className="font-serif text-base md:text-lg tracking-wide truncate">
+                  <span className="font-serif text-xl md:text-2xl uppercase tracking-[0.18em] truncate">
                     {siteContent.brand.shortName}
                   </span>
                   <span className="text-[11px] uppercase tracking-[0.18em] text-white/70 truncate">

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { siteContent } from '../content/siteContent'
-import heroLogoGif from '../data/video/Logo Image.gif'
+import heroLogoGif from '../data/images/Logo Image.png'
 
 const logoVideoUrl = new URL('/media/logo.webm', import.meta.url).toString()
 const logoPngUrl = new URL('/media/logo.png', import.meta.url).toString()
@@ -37,8 +37,8 @@ function HeroLogo() {
   return (
     <div className="mx-auto flex w-full max-w-[360px] flex-col items-center">
       <div className="relative w-full">
-        {/* Larger-radius cyan glow behind the logo */}
-        <div className="absolute inset-0 -z-10 rounded-[32px] blur-3xl animate-hero-glow bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.72)_0%,rgba(34,211,238,0.30)_45%,transparent_90%)]" />
+        {/* Larger-radius glow behind the logo (animation removed for performance) */}
+        <div className="absolute inset-0 -z-10 rounded-[32px] blur-3xl bg-[radial-gradient(circle_at_center,rgba(255,138,76,0.65)_0%,rgba(255,138,76,0.28)_45%,transparent_90%)]" />
 
         {/* Animated logo (GIF) */}
         <img
@@ -64,6 +64,7 @@ function HeroLogo() {
 
 export default function HomePage() {
   const { hero, aboutOurCraftPanel, bannerPanel, pressAndReviewsSection } = siteContent.homePage
+  const [heroTitle, ...heroSubLines] = hero.headline.split('\n')
 
   return (
     <div className="mx-auto max-w-6xl px-4">
@@ -74,11 +75,22 @@ export default function HomePage() {
               <p className="text-xs uppercase tracking-[0.35em] text-white/60">{hero.eyebrow}</p>
             ) : null}
 
-            <h1 className="mt-3 font-serif text-5xl leading-tight text-white md:text-6xl whitespace-pre-line">
-              {hero.headline}
-            </h1>
+            <div className="relative inline-block">
+              <span
+                aria-hidden="true"
+                className="absolute inset-[-8%] -z-10 rounded-full blur-3xl bg-[radial-gradient(circle_at_35%_45%,rgba(255,255,255,0.22),rgba(0,8,32,0))]"
+              />
+              <h1 className="mt-3 font-serif text-white leading-tight">
+                <span className="block text-6xl md:text-7xl uppercase tracking-[0.18em]">{heroTitle}</span>
+                {heroSubLines.length > 0 ? (
+                  <span className="mt-3 block text-xl md:text-2xl uppercase tracking-[0.18em] text-white/85 leading-snug">
+                    {heroSubLines.join(' ')}
+                  </span>
+                ) : null}
+              </h1>
+            </div>
 
-            <p className="mt-5 max-w-prose text-base leading-relaxed text-white/75 whitespace-pre-line">
+            <p className="mt-5 max-w-prose text-base leading-relaxed text-white/75 whitespace-pre-line text-justify">
               {hero.subcopy}
             </p>
 
@@ -110,7 +122,7 @@ export default function HomePage() {
             {aboutOurCraftPanel.columns.map((col) => (
               <div key={col.title}>
                 <div className="text-sm font-semibold text-white">{col.title}</div>
-                <p className="mt-2 text-sm text-white/72">{col.text}</p>
+                <p className="mt-2 text-sm text-white/72 text-justify">{col.text}</p>
               </div>
             ))}
           </div>
@@ -241,9 +253,9 @@ export default function HomePage() {
                 <p className="mt-2 text-sm text-white/65">
                   {item.reviewer} · {item.location} · {item.eventDateText}
                 </p>
-                <p className="mt-4 text-sm text-white/75">{item.summary}</p>
+                <p className="mt-4 text-sm text-white/75 text-justify">{item.summary}</p>
 
-                <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-white/72">
+                <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-white/72 text-justify">
                   {item.highlightsBullets.map((b) => (
                     <li key={b}>{b}</li>
                   ))}
