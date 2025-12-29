@@ -160,6 +160,15 @@ export default function BookingPage() {
     }
   }
 
+  const bookingPanelStyle = useMemo(
+    () =>
+      ({
+        ['--glass-gradient']:
+          'linear-gradient(145deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.32) 55%, rgba(0, 0, 0, 0.18) 100%)',
+      } as React.CSSProperties),
+    [],
+  )
+
   return (
     <div className="mx-auto max-w-6xl px-4">
       <SectionReveal>
@@ -172,7 +181,11 @@ export default function BookingPage() {
       <div className="mt-6 grid gap-6 md:mt-8 md:grid-cols-[1.2fr_0.8fr]">
         <SectionReveal>
           <div ref={formSectionRef}>
-            <GlassPanel className="p-6 sm:p-7 md:p-10" labelledBy="booking-form-title">
+            <GlassPanel
+              className="p-6 sm:p-7 md:p-10"
+              labelledBy="booking-form-title"
+              style={bookingPanelStyle}
+            >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <h2 id="booking-form-title" className="font-serif text-2xl text-white">
                   {step === 'details' ? 'Your details' : 'Confirm booking'}
@@ -487,7 +500,7 @@ export default function BookingPage() {
         </SectionReveal>
 
         <SectionReveal delay={0.08}>
-          <GlassPanel className="p-6 sm:p-7 md:p-10" labelledBy="summary-title">
+          <GlassPanel className="p-6 sm:p-7 md:p-10" labelledBy="summary-title" style={bookingPanelStyle}>
             <h2 id="summary-title" className="font-serif text-2xl text-white">
               Summary
             </h2>
