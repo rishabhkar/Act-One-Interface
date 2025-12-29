@@ -90,8 +90,8 @@ export default function SupportFeedbackPage() {
         <div className="pt-10">
           <h1 className="font-serif text-3xl text-white md:text-4xl">Support &amp; Feedback</h1>
           <p className="mt-3 w-full max-w-none text-sm text-white/70 text-justify">
-            Help us keep rehearsal rooms alive and stories on-stage. And if youve watched us perform, tell us what you
-            feltyour words shape our next curtain call.
+            Help us keep rehearsal rooms alive and stories on-stage. And if you’ve watched us perform, tell us what you
+            felt—your words shape our next curtain call.
           </p>
         </div>
       </SectionReveal>
@@ -99,76 +99,8 @@ export default function SupportFeedbackPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <SectionReveal>
           <GlassPanel className="p-6 md:p-8" style={panelStyle}>
-            <div className="text-sm font-semibold text-white">Donate via UPI</div>
-            <div className="mt-2 text-sm text-white/70">Scan the QR code to support our work.</div>
-
-            <div className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-3">
-              <img src={qrWhite} alt="UPI QR code" className="w-full rounded-xl" decoding="async" />
-            </div>
-
-            <div className="mt-6 text-sm font-semibold text-white">Send us a note</div>
-            <div className="mt-2 text-sm text-white/70">Share your details so we can thank you and share updates.</div>
-
-            {supportSubmitted ? (
-              <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white/80">
-                Thank you. Weve received your message.
-              </div>
-            ) : (
-              <form className="mt-6 space-y-5" onSubmit={onSubmitSupport} noValidate>
-                <FormField
-                  id="support-fullName"
-                  label="Full Name"
-                  required
-                  value={supportForm.fullName}
-                  onChange={(v) => setSupportForm((s) => ({ ...s, fullName: v }))}
-                  error={supportErrors.fullName}
-                />
-
-                <FormField
-                  id="support-email"
-                  label="Email"
-                  required
-                  type="email"
-                  value={supportForm.email}
-                  onChange={(v) => setSupportForm((s) => ({ ...s, email: v }))}
-                  error={supportErrors.email}
-                />
-
-                <FormField
-                  id="support-phone"
-                  label="Phone Number"
-                  required
-                  type="tel"
-                  value={supportForm.phone}
-                  onChange={(v) => setSupportForm((s) => ({ ...s, phone: v }))}
-                  error={supportErrors.phone}
-                />
-
-                <FormField
-                  id="support-message"
-                  label="Message"
-                  required
-                  as="textarea"
-                  value={supportForm.message}
-                  onChange={(v) => setSupportForm((s) => ({ ...s, message: v }))}
-                  error={supportErrors.message}
-                  placeholder="Leave a note with your donation"
-                />
-
-                <div className="pt-1">
-                  <button type="submit" className="btn-primary w-full">
-                    Submit
-                  </button>
-                </div>
-              </form>
-            )}
-          </GlassPanel>
-        </SectionReveal>
-
-        <SectionReveal>
-          <GlassPanel className="p-6 md:p-8" style={panelStyle}>
             <div className="text-sm font-semibold text-white">Feedback</div>
-            <div className="mt-2 text-sm text-white/70">Tell us what stayed with youmoments, music, or performances.</div>
+            <div className="mt-2 text-sm text-white/70">Tell us what stayed with you—moments, music, or performances.</div>
 
             {feedbackSubmitted ? (
               <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white/80">
@@ -240,6 +172,76 @@ export default function SupportFeedbackPage() {
                 <div className="pt-1">
                   <button type="submit" className="btn-primary w-full">
                     Submit Feedback
+                  </button>
+                </div>
+              </form>
+            )}
+          </GlassPanel>
+        </SectionReveal>
+
+        <SectionReveal>
+          <GlassPanel className="p-6 md:p-8" style={panelStyle}>
+            <div className="text-sm font-semibold text-white">Donate via UPI</div>
+            <div className="mt-2 text-sm text-white/70">Scan the QR code to support our work.</div>
+
+            <div className="mt-6 flex justify-center">
+              <div className="w-full max-w-[220px] overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-3">
+                <img src={qrWhite} alt="UPI QR code" className="w-full rounded-xl" decoding="async" />
+              </div>
+            </div>
+
+            <div className="mt-8 text-sm font-semibold text-white">Send us a note</div>
+            <div className="mt-2 text-sm text-white/70">Share your details so we can thank you and share updates.</div>
+
+            {supportSubmitted ? (
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white/80">
+                Thank you. We’ve received your message.
+              </div>
+            ) : (
+              <form className="mt-6 space-y-5" onSubmit={onSubmitSupport} noValidate>
+                <FormField
+                  id="support-fullName"
+                  label="Full Name"
+                  required
+                  value={supportForm.fullName}
+                  onChange={(v) => setSupportForm((s) => ({ ...s, fullName: v }))}
+                  error={supportErrors.fullName}
+                />
+
+                <FormField
+                  id="support-email"
+                  label="Email"
+                  required
+                  type="email"
+                  value={supportForm.email}
+                  onChange={(v) => setSupportForm((s) => ({ ...s, email: v }))}
+                  error={supportErrors.email}
+                />
+
+                <FormField
+                  id="support-phone"
+                  label="Phone Number"
+                  required
+                  type="tel"
+                  value={supportForm.phone}
+                  onChange={(v) => setSupportForm((s) => ({ ...s, phone: v }))}
+                  error={supportErrors.phone}
+                />
+
+                <FormField
+                  id="support-message"
+                  label="Message"
+                  required
+                  as="textarea"
+                  value={supportForm.message}
+                  onChange={(v) => setSupportForm((s) => ({ ...s, message: v }))}
+                  error={supportErrors.message}
+                  placeholder="Leave a note with your donation…"
+                />
+
+                <div className="pt-1">
+                  <button type="submit" className="btn-primary w-full">
+                    Submit
                   </button>
                 </div>
               </form>

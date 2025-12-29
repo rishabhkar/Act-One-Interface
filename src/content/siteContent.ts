@@ -108,6 +108,7 @@ export type SiteContent = {
       email: string
       phone: string
       phone2?: string
+      phone3?: string
       whatsapp: string
       mapEmbedUrl: string
     }
@@ -298,17 +299,17 @@ export const siteContent: SiteContent = {
     pageTitle: 'Contact',
     intro: 'Reach out for bookings, collaborations, workshops, and press.',
     contactDetails: {
-      address: '12th Floor, Tower B, Gaur City 1, Avenue 1',
-      city: 'Greater Noida West',
+      address: 'Gaur City 1, Avenue 1, Greater Noida West',
+      city: '',
       email: 'prarambh@gmail.com',
-      phone: '+91-9818620738',
-      phone2: '',
+      phone: '+91-9310109669',
+      phone2: '+91-9818469935',
+      phone3: '+91-9818620738',
       whatsapp: '[Optional TBD]',
-      mapEmbedUrl: 'https://share.google/6riV0u9dlmwr0tV5r',
+      mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.5648848634232!2d77.42426929999999!3d28.6128274!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cef8952803847%3A0xeb592bc2ab8236fb!2s1st%20Avenue%2C%20GC1!5e0!3m2!1sen!2sin!4v1767012123516!5m2!1sen!2sin',
     },
     social: [
       { label: 'Instagram', href: '[TBD]' },
-      { label: 'YouTube', href: '[Optional TBD]' },
       { label: 'Facebook', href: 'https://www.facebook.com/prarambh.natya/' },
     ],
   },
