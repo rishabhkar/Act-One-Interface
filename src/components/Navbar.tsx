@@ -86,7 +86,7 @@ export default function Navbar() {
       <div className="mx-auto max-w-6xl px-4">
         {/* navbar shell: keep dark base and add a darker blue left-to-right gradient that fades before the nav links */}
         <div
-          className="mt-4 rounded-2xl border border-white/10 bg-black/20 backdrop-blur-xl"
+          className="mt-4 rounded-2xl border border-white/10 bg-black/20 backdrop-blur-lg"
           style={{
             // glassy multi-stop deep blues with a subtle grey fade on the right, no orange
             backgroundImage:
@@ -102,13 +102,13 @@ export default function Navbar() {
                 <img
                   src={smallLogoUrl}
                   alt={siteContent.brand.logoAlt}
-                  className="h-10 w-auto md:h-12 relative z-10 flex-shrink-0"
+                  className="relative z-10 flex-shrink-0 responsive-logo"
                 />
                 <span className="ml-3 flex flex-col leading-none relative z-10 min-w-0">
-                  <span className="font-serif text-xl md:text-2xl uppercase tracking-[0.18em] truncate">
+                  <span className="font-serif uppercase tracking-[0.18em] truncate brand-title-clamp">
                     {siteContent.brand.shortName}
                   </span>
-                  <span className="text-[11px] uppercase tracking-[0.18em] text-white/70 truncate">
+                  <span className="uppercase text-white/70 truncate brand-subtitle-clamp">
                     Theatre Group
                   </span>
                 </span>
@@ -118,7 +118,7 @@ export default function Navbar() {
             <nav className="hidden flex-wrap items-center gap-1 md:flex" aria-label="Primary">
               {primaryLinks}
               {overflowLinks.length > 0 && (
-                <div className="relative" onMouseLeave={() => setMoreOpen(false)}>
+                <div className="relative">
                   <button
                     type="button"
                     className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-white/80 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
