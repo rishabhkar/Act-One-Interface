@@ -5,13 +5,13 @@ import RouteTransition from './components/RouteTransition'
 import BookingPage from './pages/BookingPage'
 import BackstageGalleryPage from './pages/BackstageGalleryPage'
 import ContactPage from './pages/ContactPage'
-import FeedbackPage from './pages/FeedbackPage'
 import GalleryPage from './pages/GalleryPage'
 import HomePage from './pages/HomePage'
+import MembersPage from './pages/MembersPage'
 import NotFoundPage from './pages/NotFoundPage'
 import PreviousShowsPage from './pages/PreviousShowsPage'
 import ShowsPage from './pages/ShowsPage'
-import SupportUsPage from './pages/SupportUsPage'
+import SupportFeedbackPage from './pages/SupportFeedbackPage'
 import WorkshopsGalleryPage from './pages/WorkshopsGalleryPage'
 import './App.css'
 
@@ -75,7 +75,7 @@ export default function App() {
             path="/support-us"
             element={
               <RouteTransition>
-                <SupportUsPage />
+                <SupportFeedbackPage />
               </RouteTransition>
             }
           />
@@ -83,7 +83,7 @@ export default function App() {
             path="/feedback"
             element={
               <RouteTransition>
-                <FeedbackPage />
+                <SupportFeedbackPage />
               </RouteTransition>
             }
           />
@@ -100,6 +100,14 @@ export default function App() {
             element={
               <RouteTransition>
                 <ContactPage />
+              </RouteTransition>
+            }
+          />
+          <Route
+            path="/members"
+            element={
+              <RouteTransition>
+                <MembersPage />
               </RouteTransition>
             }
           />

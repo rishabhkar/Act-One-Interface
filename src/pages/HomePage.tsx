@@ -1,4 +1,4 @@
-import { ArrowRight, ExternalLink } from 'lucide-react'
+import { ArrowRight, ExternalLink, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
@@ -194,6 +194,39 @@ export default function HomePage() {
           <Link to={bannerPanel.rightCta.href} className="btn-secondary mt-5 md:mt-0">
             {bannerPanel.rightCta.label}
           </Link>
+        </div>
+      </SectionReveal>
+
+      <SectionReveal>
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <GlassPanel
+            as="article"
+            className="p-6 md:p-8"
+            labelledBy="members-highlight"
+            style={
+              ({
+                ['--glass-gradient']:
+                  'linear-gradient(230deg, rgba(255, 106, 26, 0.22) 0%, rgba(0, 10, 55, 0.55) 55%, rgba(0, 0, 0, 0.30) 100%)',
+              } as React.CSSProperties)
+            }
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 id="members-highlight" className="text-lg font-semibold text-white">
+                  Members
+                </h3>
+                <p className="mt-2 text-sm text-white/70 text-justify">
+                  Meet the artists and organisers behind Prarambh—the people who carry rehearsal into performance.
+                </p>
+              </div>
+              <Users className="h-6 w-6 text-white/60" aria-hidden="true" />
+            </div>
+            <Link to="/members" className="btn-secondary mt-5 inline-flex">
+              View members <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+          </GlassPanel>
+
+          <div />
         </div>
       </SectionReveal>
 

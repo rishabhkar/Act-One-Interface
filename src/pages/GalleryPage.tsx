@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import GlassPanel from '../components/GlassPanel'
@@ -129,8 +130,17 @@ export default function GalleryPage() {
     <div className="mx-auto max-w-6xl px-4">
       <SectionReveal>
         <header className="pt-10">
-          <h1 className="font-serif text-4xl text-white md:text-5xl">Gallery</h1>
-          <p className="mt-3 max-w-prose text-white/70">Browse photos grouped by production.</p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="font-serif text-4xl text-white md:text-5xl">Gallery</h1>
+              <p className="mt-3 max-w-prose text-white/70">Browse photos grouped by production.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link to="/gallery/backstage" className="btn-secondary px-4 py-2">
+                Backstage
+              </Link>
+            </div>
+          </div>
         </header>
       </SectionReveal>
 

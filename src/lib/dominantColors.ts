@@ -114,14 +114,18 @@ export async function extractDominantColors(
 export function colorsToGlassGradient(colors: RGB[] | null): string | null {
   if (!colors || !colors.length) return null
 
-  // Prefer a dark-blue anchor for glass depth + extracted accent.
   const accent1 = colors[0]
   const accent2 = colors[1] ?? colors[0]
 
-  // Keep the existing site mood: deep navy + warm accent.
+  // Dark anchor to keep the site mood consistent.
   const deep = { r: 0, g: 8, b: 28 }
 
-  return `linear-gradient(267deg, ${rgbToCss(accent1, 0.34)} 0%, ${rgbToCss(accent2, 0.26)} 40%, rgba(40, 55, 95, 0.30) 62%, rgba(0, 10, 55, 0.70) 82%, ${rgbToCss(deep, 0.90)} 100%)`
+  // Use colors to derive an angle so different images naturally produce different gradients.
+  const angle =
+    220 +
+    ((((accent1.r * 3 + accent1.g * 2 + accent1.b * 5 + accent2.r + accent2.g + accent2.b) / 6) | 0) % 100)
+
+  return `linear-gradient(${angle}deg, ${rgbToCss(accent1, 0.52)} 0%, ${rgbToCss(accent2, 0.34)} 28%, rgba(40, 55, 95, 0.34) 52%, rgba(0, 10, 55, 0.82) 78%, ${rgbToCss(deep, 0.92)} 100%)`
 }
 
 /**
