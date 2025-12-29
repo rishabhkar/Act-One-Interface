@@ -164,12 +164,12 @@ export const siteContent: SiteContent = {
   },
   homePage: {
     hero: {
-      eyebrow: 'PRARAMBH THEATRE GROUP',
-      headline: 'Premium theatre nights—where velvet, light, and silence conspire.',
+      eyebrow: '',
+      headline: 'Prarambh Theatre\nA journey where stories begin, voices rise, and society reflects.',
       subcopy:
-        'A socio-cultural organisation and public charitable trust devoted to theatre—and to the social questions it can hold. We stage stories that raise awareness in women’s rights, child welfare, the environment, and community education.',
-      ctaPrimary: { label: 'Book tickets', href: '/book' },
-      ctaSecondary: { label: 'Explore shows', href: '/shows' },
+        'Prarambh is a socio-cultural theatre collective and public charitable trust devoted to meaningful storytelling.\nWe create theatre that engages with social realities—women’s rights, child welfare, environment, and community consciousness—through powerful performances and dialogue-driven drama.',
+      ctaPrimary: { label: '', href: '/' },
+      ctaSecondary: { label: '', href: '/' },
       centerMedia: {
         type: 'videoWithFallback',
         videoPath: 'public/media/logo.webm',
@@ -177,25 +177,21 @@ export const siteContent: SiteContent = {
         caption: 'STORIES THAT BREATHE ON STAGE.',
       },
     },
-    quickStatsCards: [
-      { value: '6+', label: 'Upcoming performances', note: '2' },
-      { value: 'Monthly', label: 'Workshops & labs', note: 'Workshop Details coming soon' },
-      { value: 'Intimate', label: 'Studio venues', note: 'Chittranjan Park' },
-    ],
+    quickStatsCards: [],
     aboutOurCraftPanel: {
-      title: 'Our craft, in three acts',
+      title: 'In three acts',
       columns: [
         {
-          title: 'Mission',
-          text: 'We promote theatre that speaks to society—raising awareness around women’s rights, child welfare, and environmental issues through engaging storytelling and community education.',
+          title: 'Our Vision',
+          text: 'We believe theatre is a mirror to society and a catalyst for change. Prarambh stages stories that question norms, amplify unheard voices, and provoke thought—without spectacle, but with sincerity and depth.',
         },
         {
-          title: 'Style',
-          text: 'Socially conscious, story-first stagecraft with attention to performance, voice, music, and lighting—built to keep audiences close to the emotional core.',
+          title: 'Our Practice',
+          text: 'Rooted in disciplined rehearsal, collective learning, and respect for classical and contemporary forms, our theatre prioritises story, performance, and emotional truth over scale or spectacle.',
         },
         {
-          title: 'Community',
-          text: 'We host workshops, readings, and open rehearsals—welcoming emerging performers and curious audiences.',
+          title: 'Our Community',
+          text: 'Prarambh is a growing family of actors, writers, thinkers, and audiences. Through performances, workshops, readings, and collaborations, we nurture dialogue and belonging within and beyond the stage.',
         },
       ],
     },
@@ -241,6 +237,44 @@ export const siteContent: SiteContent = {
           link: {
             label: 'Read more',
             href: 'https://www.newswaveindia.com/english/prarambh-theatre-group-staged-two-plays-of-two-different-genres/',
+          },
+        },
+        {
+          id: 'press-2022-world-theatre-day',
+          headline: 'World Theatre Day celebrated with a vibrant range of Bengali plays',
+          reviewer: 'The Statesman',
+          location: 'New Delhi',
+          eventDateText: 'World Theatre Day',
+          venue: 'New Delhi',
+          summary:
+            'World Theatre Day in Delhi witnessed a rich presentation of Bengali plays spanning diverse themes and genres. Multiple groups showcased the evolving language of contemporary Bengali theatre, balancing socially relevant narratives with creative experimentation to reaffirm theatre’s role as a cultural and intellectual space.',
+          highlightsBullets: [
+            'Themes: social awareness, human relationships, cultural reflection',
+            'Production praised: variety of genres, narrative depth, ensemble performances',
+            'Overall note: a meaningful celebration of theatre as a living art form',
+          ],
+          link: {
+            label: 'Read more',
+            href: 'https://www.thestatesman.com/entertainment/theatre/world-theatre-day-saw-bunch-bengali-plays-variety-genres-1503060429.html',
+          },
+        },
+        {
+          id: 'press-chup-adalat-cholchey',
+          headline: 'Prarambh’s “Chup, Adalat Cholchey” puts gender bias on trial',
+          reviewer: 'News Wave India',
+          location: 'New Delhi',
+          eventDateText: '',
+          venue: 'New Delhi',
+          summary:
+            'A sharp, courtroom-style narrative confronting patriarchal attitudes and social prejudice. The production uses confrontation and irony to challenge norms, reinforcing Prarambh’s commitment to socially conscious storytelling.',
+          highlightsBullets: [
+            'Themes: gender bias, patriarchy, social justice',
+            'Production praised: powerful performances, strong message, focused direction',
+            'Overall note: theatre used as a platform for questioning social norms',
+          ],
+          link: {
+            label: 'Read more',
+            href: 'https://www.newswaveindia.com/english/prarambhs-chup-adalat-cholchey-tackling-gender-bias-on-stage/',
           },
         },
       ],

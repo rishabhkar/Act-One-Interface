@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { siteContent } from '../content/siteContent'
-import heroLogoGif from '../data/video/Logo Image.gif'
+import heroLogoGif from '../data/images/Logo Image.png'
+import { memberProfiles } from '../data/members'
 
 const logoVideoUrl = new URL('/media/logo.webm', import.meta.url).toString()
 const logoPngUrl = new URL('/media/logo.png', import.meta.url).toString()
@@ -37,8 +38,8 @@ function HeroLogo() {
   return (
     <div className="mx-auto flex w-full max-w-[360px] flex-col items-center">
       <div className="relative w-full">
-        {/* Larger-radius cyan glow behind the logo */}
-        <div className="absolute inset-0 -z-10 rounded-[32px] blur-3xl animate-hero-glow bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.72)_0%,rgba(34,211,238,0.30)_45%,transparent_90%)]" />
+        {/* Larger-radius glow behind the logo (animation removed for performance) */}
+        <div className="absolute inset-0 -z-10 rounded-[32px] blur-3xl bg-[radial-gradient(circle_at_center,rgba(255,138,76,0.65)_0%,rgba(255,138,76,0.28)_45%,transparent_90%)]" />
 
         {/* Animated logo (GIF) */}
         <img
@@ -63,41 +64,39 @@ function HeroLogo() {
 }
 
 export default function HomePage() {
-  const { hero, quickStatsCards, aboutOurCraftPanel, bannerPanel, pressAndReviewsSection } =
-    siteContent.homePage
+  const { hero, aboutOurCraftPanel, bannerPanel, pressAndReviewsSection } = siteContent.homePage
+  const [heroTitle, ...heroSubLines] = hero.headline.split('\n')
 
   return (
     <div className="mx-auto max-w-6xl px-4">
       <section className="grid gap-10 pb-8 pt-10 md:grid-cols-2 md:items-center">
         <SectionReveal>
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-white/60">{hero.eyebrow}</p>
-            <h1 className="mt-3 font-serif text-4xl leading-tight text-white md:text-5xl">
-              {hero.headline}
-            </h1>
-            <p className="mt-4 max-w-prose text-base text-white/75">{hero.subcopy}</p>
+            {hero.eyebrow?.trim() ? (
+              <p className="text-xs uppercase tracking-[0.35em] text-white/60">{hero.eyebrow}</p>
+            ) : null}
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Link to={hero.ctaPrimary.href} className="btn-primary">
-                {hero.ctaPrimary.label} <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-              <Link to={hero.ctaSecondary.href} className="btn-secondary">
-                {hero.ctaSecondary.label}
-              </Link>
+            <div className="relative inline-block">
+              <span
+                aria-hidden="true"
+                className="absolute inset-[-8%] -z-10 rounded-full blur-3xl bg-[radial-gradient(circle_at_35%_45%,rgba(255,255,255,0.22),rgba(0,8,32,0))]"
+              />
+              <h1 className="mt-3 font-serif text-white leading-tight">
+                <span className="block text-6xl md:text-7xl uppercase tracking-[0.18em]">{heroTitle}</span>
+                {heroSubLines.length > 0 ? (
+                  <span className="mt-3 block text-xl md:text-2xl uppercase tracking-[0.18em] text-white/85 leading-snug">
+                    {heroSubLines.join(' ')}
+                  </span>
+                ) : null}
+              </h1>
             </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              {quickStatsCards.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
-                >
-                  <div className="text-2xl font-semibold text-white">{stat.value}</div>
-                  <div className="mt-1 text-xs text-white/60">{stat.label}</div>
-                  <div className="mt-1 text-[11px] text-white/50">{stat.note}</div>
-                </div>
-              ))}
-            </div>
+            <p className="mt-5 max-w-prose text-base leading-relaxed text-white/75 whitespace-pre-line text-justify">
+              {hero.subcopy}
+            </p>
+
+            {/* CTAs intentionally removed on the Home page for now (identity-first). */}
+            {/* Quick stat cards intentionally removed. */}
           </div>
         </SectionReveal>
 
@@ -124,7 +123,7 @@ export default function HomePage() {
             {aboutOurCraftPanel.columns.map((col) => (
               <div key={col.title}>
                 <div className="text-sm font-semibold text-white">{col.title}</div>
-                <p className="mt-2 text-sm text-white/72">{col.text}</p>
+                <p className="mt-2 text-sm text-white/72 text-justify">{col.text}</p>
               </div>
             ))}
           </div>
@@ -198,7 +197,7 @@ export default function HomePage() {
       </SectionReveal>
 
       <SectionReveal>
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <div className="mt-10">
           <GlassPanel
             as="article"
             className="p-6 md:p-8"
@@ -210,7 +209,7 @@ export default function HomePage() {
               } as React.CSSProperties)
             }
           >
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h3 id="members-highlight" className="text-lg font-semibold text-white">
                   Members
@@ -219,14 +218,28 @@ export default function HomePage() {
                   Meet the artists and organisers behind Prarambh—the people who carry rehearsal into performance.
                 </p>
               </div>
-              <Users className="h-6 w-6 text-white/60" aria-hidden="true" />
+              <Users className="h-6 w-6 text-white/60 flex-shrink-0" aria-hidden="true" />
             </div>
-            <Link to="/members" className="btn-secondary mt-5 inline-flex">
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              {memberProfiles.slice(0, 12).map((m) => (
+                <Link key={m.id} to={`/members#${m.id}`} className="flex flex-col items-center w-16 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
+                  <img
+                    src={m.photoSrc}
+                    alt={m.name}
+                    className="h-14 w-14 rounded-full object-cover border border-white/15 bg-white/5"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span className="mt-1 text-[10px] text-white/70 text-center line-clamp-2 leading-tight">{m.name}</span>
+                </Link>
+              ))}
+            </div>
+
+            <Link to="/members" className="btn-secondary mt-6 inline-flex">
               View members <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </GlassPanel>
-
-          <div />
         </div>
       </SectionReveal>
 
@@ -255,9 +268,9 @@ export default function HomePage() {
                 <p className="mt-2 text-sm text-white/65">
                   {item.reviewer} · {item.location} · {item.eventDateText}
                 </p>
-                <p className="mt-4 text-sm text-white/75">{item.summary}</p>
+                <p className="mt-4 text-sm text-white/75 text-justify">{item.summary}</p>
 
-                <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-white/72">
+                <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-white/72 text-justify">
                   {item.highlightsBullets.map((b) => (
                     <li key={b}>{b}</li>
                   ))}
