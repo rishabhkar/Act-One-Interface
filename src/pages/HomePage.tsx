@@ -63,41 +63,27 @@ function HeroLogo() {
 }
 
 export default function HomePage() {
-  const { hero, quickStatsCards, aboutOurCraftPanel, bannerPanel, pressAndReviewsSection } =
-    siteContent.homePage
+  const { hero, aboutOurCraftPanel, bannerPanel, pressAndReviewsSection } = siteContent.homePage
 
   return (
     <div className="mx-auto max-w-6xl px-4">
       <section className="grid gap-10 pb-8 pt-10 md:grid-cols-2 md:items-center">
         <SectionReveal>
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-white/60">{hero.eyebrow}</p>
-            <h1 className="mt-3 font-serif text-4xl leading-tight text-white md:text-5xl">
+            {hero.eyebrow?.trim() ? (
+              <p className="text-xs uppercase tracking-[0.35em] text-white/60">{hero.eyebrow}</p>
+            ) : null}
+
+            <h1 className="mt-3 font-serif text-5xl leading-tight text-white md:text-6xl whitespace-pre-line">
               {hero.headline}
             </h1>
-            <p className="mt-4 max-w-prose text-base text-white/75">{hero.subcopy}</p>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Link to={hero.ctaPrimary.href} className="btn-primary">
-                {hero.ctaPrimary.label} <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-              <Link to={hero.ctaSecondary.href} className="btn-secondary">
-                {hero.ctaSecondary.label}
-              </Link>
-            </div>
+            <p className="mt-5 max-w-prose text-base leading-relaxed text-white/75 whitespace-pre-line">
+              {hero.subcopy}
+            </p>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              {quickStatsCards.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
-                >
-                  <div className="text-2xl font-semibold text-white">{stat.value}</div>
-                  <div className="mt-1 text-xs text-white/60">{stat.label}</div>
-                  <div className="mt-1 text-[11px] text-white/50">{stat.note}</div>
-                </div>
-              ))}
-            </div>
+            {/* CTAs intentionally removed on the Home page for now (identity-first). */}
+            {/* Quick stat cards intentionally removed. */}
           </div>
         </SectionReveal>
 

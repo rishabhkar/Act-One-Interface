@@ -164,12 +164,12 @@ export const siteContent: SiteContent = {
   },
   homePage: {
     hero: {
-      eyebrow: 'PRARAMBH THEATRE GROUP',
-      headline: 'Premium theatre nights—where velvet, light, and silence conspire.',
+      eyebrow: '',
+      headline: 'Prarambh Theatre\nA journey where stories begin, voices rise, and society reflects.',
       subcopy:
-        'A socio-cultural organisation and public charitable trust devoted to theatre—and to the social questions it can hold. We stage stories that raise awareness in women’s rights, child welfare, the environment, and community education.',
-      ctaPrimary: { label: 'Book tickets', href: '/book' },
-      ctaSecondary: { label: 'Explore shows', href: '/shows' },
+        'Prarambh is a socio-cultural theatre collective and public charitable trust devoted to meaningful storytelling.\nWe create theatre that engages with social realities—women’s rights, child welfare, environment, and community consciousness—through powerful performances and dialogue-driven drama.',
+      ctaPrimary: { label: '', href: '/' },
+      ctaSecondary: { label: '', href: '/' },
       centerMedia: {
         type: 'videoWithFallback',
         videoPath: 'public/media/logo.webm',
@@ -177,25 +177,21 @@ export const siteContent: SiteContent = {
         caption: 'STORIES THAT BREATHE ON STAGE.',
       },
     },
-    quickStatsCards: [
-      { value: '6+', label: 'Upcoming performances', note: '2' },
-      { value: 'Monthly', label: 'Workshops & labs', note: 'Workshop Details coming soon' },
-      { value: 'Intimate', label: 'Studio venues', note: 'Chittranjan Park' },
-    ],
+    quickStatsCards: [],
     aboutOurCraftPanel: {
-      title: 'Our craft, in three acts',
+      title: 'In three acts',
       columns: [
         {
-          title: 'Mission',
-          text: 'We promote theatre that speaks to society—raising awareness around women’s rights, child welfare, and environmental issues through engaging storytelling and community education.',
+          title: 'Our Vision',
+          text: 'We believe theatre is a mirror to society and a catalyst for change. Prarambh stages stories that question norms, amplify unheard voices, and provoke thought—without spectacle, but with sincerity and depth.',
         },
         {
-          title: 'Style',
-          text: 'Socially conscious, story-first stagecraft with attention to performance, voice, music, and lighting—built to keep audiences close to the emotional core.',
+          title: 'Our Practice',
+          text: 'Rooted in disciplined rehearsal, collective learning, and respect for classical and contemporary forms, our theatre prioritises story, performance, and emotional truth over scale or spectacle.',
         },
         {
-          title: 'Community',
-          text: 'We host workshops, readings, and open rehearsals—welcoming emerging performers and curious audiences.',
+          title: 'Our Community',
+          text: 'Prarambh is a growing family of actors, writers, thinkers, and audiences. Through performances, workshops, readings, and collaborations, we nurture dialogue and belonging within and beyond the stage.',
         },
       ],
     },
