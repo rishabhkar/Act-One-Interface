@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { siteContent } from '../content/siteContent'
-import heroLogoGif from '../data/images/Logo Image.png'
+import heroLogoGif from '../data/video/Logo Image.gif'
+import { memberProfiles } from '../data/members'
 
 const logoVideoUrl = new URL('/media/logo.webm', import.meta.url).toString()
 const logoPngUrl = new URL('/media/logo.png', import.meta.url).toString()
@@ -196,7 +197,7 @@ export default function HomePage() {
       </SectionReveal>
 
       <SectionReveal>
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <div className="mt-10">
           <GlassPanel
             as="article"
             className="p-6 md:p-8"
@@ -208,7 +209,7 @@ export default function HomePage() {
               } as React.CSSProperties)
             }
           >
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h3 id="members-highlight" className="text-lg font-semibold text-white">
                   Members
@@ -217,14 +218,28 @@ export default function HomePage() {
                   Meet the artists and organisers behind Prarambh—the people who carry rehearsal into performance.
                 </p>
               </div>
-              <Users className="h-6 w-6 text-white/60" aria-hidden="true" />
+              <Users className="h-6 w-6 text-white/60 flex-shrink-0" aria-hidden="true" />
             </div>
-            <Link to="/members" className="btn-secondary mt-5 inline-flex">
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              {memberProfiles.slice(0, 12).map((m) => (
+                <Link key={m.id} to={`/members#${m.id}`} className="flex flex-col items-center w-16 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
+                  <img
+                    src={m.photoSrc}
+                    alt={m.name}
+                    className="h-14 w-14 rounded-full object-cover border border-white/15 bg-white/5"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span className="mt-1 text-[10px] text-white/70 text-center line-clamp-2 leading-tight">{m.name}</span>
+                </Link>
+              ))}
+            </div>
+
+            <Link to="/members" className="btn-secondary mt-6 inline-flex">
               View members <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </GlassPanel>
-
-          <div />
         </div>
       </SectionReveal>
 
