@@ -3,12 +3,16 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
 import RouteTransition from './components/RouteTransition'
 import BookingPage from './pages/BookingPage'
+import BackstageGalleryPage from './pages/BackstageGalleryPage'
 import ContactPage from './pages/ContactPage'
+import FeedbackPage from './pages/FeedbackPage'
 import GalleryPage from './pages/GalleryPage'
 import HomePage from './pages/HomePage'
 import NotFoundPage from './pages/NotFoundPage'
 import PreviousShowsPage from './pages/PreviousShowsPage'
 import ShowsPage from './pages/ShowsPage'
+import SupportUsPage from './pages/SupportUsPage'
+import WorkshopsGalleryPage from './pages/WorkshopsGalleryPage'
 import './App.css'
 
 export default function App() {
@@ -48,6 +52,38 @@ export default function App() {
             element={
               <RouteTransition>
                 <GalleryPage />
+              </RouteTransition>
+            }
+          />
+          <Route
+            path="/gallery/backstage"
+            element={
+              <RouteTransition>
+                <BackstageGalleryPage />
+              </RouteTransition>
+            }
+          />
+          <Route
+            path="/gallery/workshops"
+            element={
+              <RouteTransition>
+                <WorkshopsGalleryPage />
+              </RouteTransition>
+            }
+          />
+          <Route
+            path="/support-us"
+            element={
+              <RouteTransition>
+                <SupportUsPage />
+              </RouteTransition>
+            }
+          />
+          <Route
+            path="/feedback"
+            element={
+              <RouteTransition>
+                <FeedbackPage />
               </RouteTransition>
             }
           />
