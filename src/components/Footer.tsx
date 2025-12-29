@@ -21,8 +21,12 @@ export default function Footer() {
                 <MapPin className="mt-0.5 h-4 w-4 text-white/70" aria-hidden="true" />
                 <span>
                   {siteContent.contactPage.contactDetails.address}
-                  <br />
-                  {siteContent.contactPage.contactDetails.city}
+                  {siteContent.contactPage.contactDetails.city && (
+                    <>
+                      <br />
+                      {siteContent.contactPage.contactDetails.city}
+                    </>
+                  )}
                 </span>
               </li>
               <li className="flex items-center gap-3">
@@ -43,6 +47,15 @@ export default function Footer() {
                     <Phone className="h-4 w-4 text-white/70" aria-hidden="true" />
                     <a className="hover:text-white" href={`tel:${siteContent.contactPage.contactDetails.phone2}`}>
                       {siteContent.contactPage.contactDetails.phone2}
+                    </a>
+                  </li>
+                )}
+              {siteContent.contactPage.contactDetails.phone3 &&
+                siteContent.contactPage.contactDetails.phone3.trim() && (
+                  <li className="flex items-center gap-3">
+                    <Phone className="h-4 w-4 text-white/70" aria-hidden="true" />
+                    <a className="hover:text-white" href={`tel:${siteContent.contactPage.contactDetails.phone3}`}>
+                      {siteContent.contactPage.contactDetails.phone3}
                     </a>
                   </li>
                 )}

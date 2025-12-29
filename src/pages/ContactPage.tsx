@@ -1,4 +1,5 @@
-import { ExternalLink, Mail, MapPin, Phone } from 'lucide-react'
+import { useMemo } from 'react'
+import { Mail, MapPin, Phone } from 'lucide-react'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { siteContent } from '../content/siteContent'
@@ -6,6 +7,15 @@ import { siteContent } from '../content/siteContent'
 export default function ContactPage() {
   const { contactDetails, social } = siteContent.contactPage
   const hasMap = Boolean(contactDetails.mapEmbedUrl && !contactDetails.mapEmbedUrl.includes('[TBD]'))
+
+  const panelStyle = useMemo(
+    () =>
+      ({
+        ['--glass-gradient']:
+          'linear-gradient(145deg, rgba(10, 30, 60, 0.45) 0%, rgba(5, 15, 40, 0.6) 50%, rgba(0, 5, 20, 0.8) 100%)',
+      } as React.CSSProperties),
+    [],
+  )
 
   return (
     <div className="mx-auto max-w-6xl px-4">
@@ -18,7 +28,7 @@ export default function ContactPage() {
 
       <div className="mt-6 grid gap-6 md:mt-8 md:grid-cols-2">
         <SectionReveal>
-          <GlassPanel className="p-6 sm:p-7 md:p-10" labelledBy="contact-details">
+          <GlassPanel className="p-6 sm:p-7 md:p-10" labelledBy="contact-details" style={panelStyle}>
             <h2 id="contact-details" className="font-serif text-2xl text-white">
               Details
             </h2>
@@ -27,8 +37,12 @@ export default function ContactPage() {
                 <MapPin className="mt-0.5 h-4 w-4 text-white/70" aria-hidden="true" />
                 <span>
                   {contactDetails.address}
-                  <br />
-                  {contactDetails.city}
+                  {contactDetails.city && (
+                    <>
+                      <br />
+                      {contactDetails.city}
+                    </>
+                  )}
                 </span>
               </li>
               <li className="flex items-center gap-3">
@@ -48,6 +62,14 @@ export default function ContactPage() {
                   <Phone className="h-4 w-4 text-white/70" aria-hidden="true" />
                   <a className="hover:text-white" href={`tel:${contactDetails.phone2}`}>
                     {contactDetails.phone2}
+                  </a>
+                </li>
+              )}
+              {contactDetails.phone3 && contactDetails.phone3.trim() && (
+                <li className="flex items-center gap-3">
+                  <Phone className="h-4 w-4 text-white/70" aria-hidden="true" />
+                  <a className="hover:text-white" href={`tel:${contactDetails.phone3}`}>
+                    {contactDetails.phone3}
                   </a>
                 </li>
               )}
@@ -76,36 +98,29 @@ export default function ContactPage() {
         </SectionReveal>
 
         <SectionReveal delay={0.08}>
-          <GlassPanel className="p-6 sm:p-7 md:p-10" labelledBy="map-panel">
+          <GlassPanel className="p-6 sm:p-7 md:p-10" labelledBy="map-panel" style={panelStyle}>
             <h2 id="map-panel" className="font-serif text-2xl text-white">
               Map
             </h2>
 
             <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-black/30">
-              <div className="flex min-h-[220px] flex-col items-center justify-center gap-3 p-6 text-center">
-                <div className="text-sm text-white/70">
-                  Map embedding can be blocked by Google for share links.
-                </div>
-                {hasMap ? (
-                  <a
-                    className="btn-secondary inline-flex items-center gap-2 px-4 py-2"
-                    href={contactDetails.mapEmbedUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Open map <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                  </a>
-                ) : (
+              {hasMap ? (
+                <iframe
+                  src={contactDetails.mapEmbedUrl}
+                  width="100%"
+                  height="320"
+                  style={{ border: 0, display: 'block' }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Google Map"
+                />
+              ) : (
+                <div className="flex min-h-[220px] flex-col items-center justify-center gap-3 p-6 text-center">
                   <div className="text-sm text-white/60">Map link not set.</div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
-
-            {hasMap && (
-              <div className="mt-4 text-xs text-white/55 break-all">
-                {contactDetails.mapEmbedUrl}
-              </div>
-            )}
           </GlassPanel>
         </SectionReveal>
       </div>
