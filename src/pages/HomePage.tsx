@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { siteContent } from '../content/siteContent'
-import heroLogoGif from '../data/video/Logo Image.gif'
+import heroLogoGif from '../data/images/Logo Image.png'
 import { memberProfiles } from '../data/members'
 
 const logoVideoUrl = new URL('/media/logo.webm', import.meta.url).toString()
