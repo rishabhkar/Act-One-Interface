@@ -1,6 +1,4 @@
-import { siteContent } from '../content/siteContent'
-
-export type IssueTicketRequest = {
+export type IssueTicketPayload = {
   showId: string
   auditoriumId: string
   showName: string
@@ -12,7 +10,7 @@ export type IssueTicketRequest = {
   transactionId: string
 }
 
-export type IssueTicketResponse = {
+export type IssueTicketResult = {
   ticketId: string
   status?: string
   qrCodeId?: string
@@ -27,12 +25,10 @@ export type IssueTicketResponse = {
   message?: string
 }
 
-export async function issueTicket(payload: IssueTicketRequest): Promise<IssueTicketResponse> {
-  const base = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
-  const basePrefix = base.trim().length ? base : ''
+const DEFAULT_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
 
-  const path = siteContent.bookingPage.form.submit.apiEndpoint || '/api/tickets/issue'
-  const url = `${basePrefix}${path}`
+export async function issueTicket(payload: IssueTicketPayload): Promise<IssueTicketResult> {
+  const url = `${DEFAULT_BASE}/api/tickets/issue`
 
   const res = await fetch(url, {
     method: 'POST',
@@ -48,10 +44,5 @@ export async function issueTicket(payload: IssueTicketRequest): Promise<IssueTic
     throw new Error(text || `Request failed with status ${res.status}`)
   }
 
-  const data = (await res.json().catch(() => null)) as IssueTicketResponse | null
-  if (!data?.ticketId) {
-    return { ticketId: `TKT-${Date.now().toString(36).toUpperCase()}` }
-  }
-
-  return data
+  return (await res.json()) as IssueTicketResult
 }

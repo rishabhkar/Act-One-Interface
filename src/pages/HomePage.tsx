@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
+import ShowGrid from '../components/ShowGrid'
 import { siteContent } from '../content/siteContent'
 import heroLogoGif from '../data/images/Logo Image.webp'
 import { memberProfiles } from '../data/members'
@@ -98,7 +99,7 @@ function BackgroundSlideshow() {
         key={`current-${currentSrc}-${currentIdx}`}
         src={currentSrc}
         alt="Previous play background"
-        className={`${baseImgClasses} ${getObjectPosition(currentSrc)} ${nextSrc && transitioning ? 'opacity-0' : 'opacity-30'}`}
+        className={`${baseImgClasses} ${getObjectPosition(currentSrc)} ${nextSrc && transitioning ? 'opacity-0' : 'opacity-50'}`}
         loading="lazy"
         decoding="async"
       />
@@ -107,7 +108,7 @@ function BackgroundSlideshow() {
           key={`next-${nextSrc}-${next}`}
           src={nextSrc}
           alt="Previous play background"
-          className={`${baseImgClasses} ${getObjectPosition(nextSrc)} ${transitioning ? 'opacity-30' : 'opacity-0'}`}
+          className={`${baseImgClasses} ${getObjectPosition(nextSrc)} ${transitioning ? 'opacity-50' : 'opacity-0'}`}
           loading="lazy"
           decoding="async"
         />
@@ -242,54 +243,15 @@ export default function HomePage() {
         <section className="mt-12">
           <SectionReveal>
             <div className="flex items-baseline justify-between gap-4">
-              <h2 className="font-serif text-white section-heading">
-                {siteContent.homePage.upcomingShowsSection.title}
-              </h2>
-              <Link
-                to={siteContent.homePage.upcomingShowsSection.rightLink.href}
-                className="text-sm text-white/70 hover:text-white"
-              >
-                {siteContent.homePage.upcomingShowsSection.rightLink.label}
+              <h2 className="font-serif text-white section-heading">{siteContent.homePage.upcomingShowsSection.title}</h2>
+              <Link to="/shows" className="text-sm text-white/70 hover:text-white">
+                View all
               </Link>
             </div>
           </SectionReveal>
 
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
-            {siteContent.homePage.upcomingShowsSection.showCards.map((card, idx) => (
-              <SectionReveal key={card.id} delay={Math.min(idx * 0.06, 0.18)}>
-                <GlassPanel
-                  as="article"
-                  className="p-6 md:p-8"
-                  labelledBy={`home-show-${card.id}`}
-                  style={
-                    ({
-                      ['--glass-gradient']:
-                        `linear-gradient(${[245, 205, 165, 125][idx % 4]}deg, rgba(255, 106, 26, 0.28) 0%, rgba(255, 106, 26, 0.12) 42%, rgba(255, 106, 26, 0.00) 80%)`,
-                    } as React.CSSProperties)
-                  }
-                >
-                  <h3 id={`home-show-${card.id}`} className="font-serif text-white card-title">
-                    {card.title}
-                  </h3>
-                  <p className="mt-2 text-sm text-white/70">{card.description}</p>
-
-                  <div className="mt-4 space-y-1 text-sm text-white/70">
-                    <div>{card.dateText}</div>
-                    <div>{card.venueText}</div>
-                    <div className="text-white/80">{card.priceText}</div>
-                  </div>
-
-                  <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                    <Link to={card.ctaPrimary.href} className="btn-primary">
-                      {card.ctaPrimary.label}
-                    </Link>
-                    <Link to={card.ctaSecondary.href} className="btn-secondary">
-                      {card.ctaSecondary.label}
-                    </Link>
-                  </div>
-                </GlassPanel>
-              </SectionReveal>
-            ))}
+          <div className="mt-6">
+            <ShowGrid limit={4} />
           </div>
         </section>
 

@@ -4,12 +4,13 @@ import { CheckCircle2, CreditCard, Loader2, ReceiptText, Ticket } from 'lucide-r
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { siteContent } from '../content/siteContent'
-import { shows } from '../data/shows'
 import { issueTicket } from '../lib/api'
 import { launchUpiPayment, type IosUpiAppLink } from '../lib/upi'
+import { getAuditoriums, type Auditorium } from '../lib/auditoriums'
 
 type FormState = {
   showId: string
+  auditoriumId: string
   ticketCount: number
   fullName: string
   email: string
@@ -30,7 +31,8 @@ type SubmitState =
 function validateDetails(state: FormState): FieldErrors {
   const errors: FieldErrors = {}
 
-  if (!state.showId) errors.showId = 'Please select a show.'
+  if (!state.showId) errors.showId = 'Missing show selection.'
+  if (!state.auditoriumId) errors.auditoriumId = 'Missing auditorium selection.'
   if (!state.ticketCount || state.ticketCount < 1 || state.ticketCount > 10)
     errors.ticketCount = 'Ticket quantity must be between 1 and 10.'
 
@@ -51,17 +53,46 @@ function validateDetails(state: FormState): FieldErrors {
 export default function BookingPage() {
   const [params] = useSearchParams()
   const preselectedShow = params.get('showId') ?? ''
+  const preselectedAuditoriumId = params.get('auditoriumId') ?? ''
+
+  const [auditoriums, setAuditoriums] = useState<Auditorium[] | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    getAuditoriums()
+      .then((data) => {
+        if (!cancelled) setAuditoriums(data)
+      })
+      .catch(() => {
+        if (!cancelled) setAuditoriums([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const selectedAuditorium = useMemo(() => {
+    const list = auditoriums ?? []
+
+    // Primary: auditoriumId from query
+    const byAuditorium = preselectedAuditoriumId ? list.find((a) => a.auditoriumId === preselectedAuditoriumId) : null
+    // Fallback: showId from query
+    const byShow = !byAuditorium && preselectedShow ? list.find((a) => a.showId === preselectedShow) : null
+
+    return byAuditorium ?? byShow ?? null
+  }, [auditoriums, preselectedAuditoriumId, preselectedShow])
 
   const initial: FormState = useMemo(
     () => ({
-      showId: shows.some((s) => s.id === preselectedShow) ? preselectedShow : shows[0]?.id ?? '',
+      showId: selectedAuditorium?.showId ?? preselectedShow ?? '',
+      auditoriumId: selectedAuditorium?.auditoriumId ?? preselectedAuditoriumId ?? '',
       ticketCount: 1,
       fullName: '',
       email: '',
       phoneNumber: '',
       consent: false,
     }),
-    [preselectedShow],
+    [selectedAuditorium, preselectedShow, preselectedAuditoriumId],
   )
 
   const [step, setStep] = useState<FlowStep>('details')
@@ -73,18 +104,22 @@ export default function BookingPage() {
   const [iosAppOptions, setIosAppOptions] = useState<IosUpiAppLink[]>([])
   const formSectionRef = useRef<HTMLDivElement | null>(null)
 
+  // Sync form when selected auditorium resolves
+  useEffect(() => {
+    setForm(initial)
+  }, [initial])
+
   useEffect(() => {
     if (formSectionRef.current) {
       formSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [step])
 
-  const selectedShow = useMemo(() => shows.find((s) => s.id === form.showId) ?? null, [form.showId])
-
   const amountPayable = useMemo(() => {
     const count = Number.isFinite(form.ticketCount) ? Math.max(1, Math.floor(form.ticketCount)) : 1
-    return count * 250
-  }, [form.ticketCount])
+    const perTicket = selectedAuditorium?.ticketAmount ?? 0
+    return count * perTicket
+  }, [form.ticketCount, selectedAuditorium?.ticketAmount])
 
   async function goToTransactionStep(e: React.FormEvent) {
     e.preventDefault()
@@ -135,9 +170,22 @@ export default function BookingPage() {
     e.preventDefault()
     setSubmit({ status: 'idle' })
 
+    if (!selectedAuditorium) {
+      setSubmit({ status: 'error', message: 'Unable to load show details. Please go back and select a show again.' })
+      return
+    }
+
     const tid = transactionId.trim()
     if (!tid) {
       setSubmit({ status: 'error', message: 'Please enter your transaction ID to continue.' })
+      return
+    }
+
+    // Validate required fields again on submit
+    const nextErrors = validateDetails(form)
+    setErrors(nextErrors)
+    if (Object.keys(nextErrors).length) {
+      setSubmit({ status: 'error', message: 'Please fill all required details before confirming.' })
       return
     }
 
@@ -145,20 +193,48 @@ export default function BookingPage() {
 
     try {
       const res = await issueTicket({
-        showName: selectedShow?.title ?? null,
-        ticketCount: form.ticketCount,
+        showId: selectedAuditorium.showId,
+        auditoriumId: selectedAuditorium.auditoriumId,
+        showName: selectedAuditorium.showName,
         fullName: form.fullName.trim(),
         email: form.email.trim(),
+        ticketCount: Math.max(1, Math.floor(form.ticketCount || 1)),
+        ticketAmount: amountPayable,
         phoneNumber: form.phoneNumber.trim(),
-        transactionID: tid,
+        transactionId: tid,
       })
 
       setSubmit({ status: 'success', ticketId: res.ticketId })
+
+      // Reset back to the main form so the user can book again.
+      setTransactionId('')
+      setStep('details')
+      setErrors({})
+      setForm(initial)
+      setForceQrFallback(false)
+      setIosAppOptions([])
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong.'
       setSubmit({ status: 'error', message })
     }
   }
+
+  const formattedWhen = useMemo(() => {
+    if (!selectedAuditorium) return null
+    const d = new Date(`${selectedAuditorium.showDate}T00:00:00`)
+    const fullDate = Number.isNaN(d.getTime())
+      ? selectedAuditorium.showDate
+      : d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
+    const [hh, mm] = (selectedAuditorium.showTime ?? '').split(':')
+    const t = new Date()
+    t.setHours(Number(hh || 0), Number(mm || 0), 0, 0)
+    const time12 = selectedAuditorium.showTime
+      ? t.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true })
+      : ''
+
+    return `${fullDate} · ${time12}`
+  }, [selectedAuditorium])
 
   const bookingPanelStyle = useMemo(
     () =>
@@ -175,6 +251,13 @@ export default function BookingPage() {
         <header className="pt-8 sm:pt-10">
           <h1 className="font-serif text-4xl text-white sm:text-5xl">{siteContent.bookingPage.pageTitle}</h1>
           <p className="mt-3 max-w-prose text-white/70">{siteContent.bookingPage.intro}</p>
+          {selectedAuditorium ? (
+            <p className="mt-4 text-sm text-white/70">
+              Booking for <span className="font-semibold text-white">{selectedAuditorium.showName}</span> ·{' '}
+              <span className="text-white">{formattedWhen}</span> ·{' '}
+              <span className="text-white">{selectedAuditorium.auditoriumName}</span>
+            </p>
+          ) : null}
         </header>
       </SectionReveal>
 
@@ -200,9 +283,11 @@ export default function BookingPage() {
                 >
                   <div className="flex items-center gap-2 font-semibold">
                     <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                    {siteContent.bookingPage.form.successState.title}
+                    Transaction recorded
                   </div>
-                  <div className="mt-1 text-emerald-100/90">{siteContent.bookingPage.form.successState.message}</div>
+                  <div className="mt-1 text-emerald-100/90">
+                    Transaction recorded. Tickets will be issued after manual approval. You will receive the tickets over the registered email within 48 hours.
+                  </div>
                   <div className="mt-2 text-emerald-100/90">
                     Ticket ID: <span className="font-semibold">{submit.ticketId}</span>
                   </div>
@@ -221,30 +306,7 @@ export default function BookingPage() {
 
               {step === 'details' ? (
                 <form className="mt-6 space-y-5" onSubmit={goToTransactionStep} noValidate>
-                  <div>
-                    <label className="label" htmlFor="showId">
-                      Select show
-                    </label>
-                    <select
-                      id="showId"
-                      className="field mt-2"
-                      value={form.showId}
-                      onChange={(e) => setForm((s) => ({ ...s, showId: e.target.value }))}
-                      aria-invalid={Boolean(errors.showId)}
-                      aria-describedby={errors.showId ? 'showId-error' : undefined}
-                    >
-                      {shows.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.title} — {s.dateLabel}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.showId && (
-                      <div id="showId-error" className="error mt-2">
-                        {errors.showId}
-                      </div>
-                    )}
-                  </div>
+                  {/* No show/auditorium dropdowns — selection comes from the show card click */}
 
                   <div>
                     <label className="label" htmlFor="ticketCount">
@@ -260,6 +322,7 @@ export default function BookingPage() {
                       onChange={(e) => setForm((s) => ({ ...s, ticketCount: Number(e.target.value) }))}
                       aria-invalid={Boolean(errors.ticketCount)}
                       aria-describedby={errors.ticketCount ? 'ticketCount-error' : undefined}
+                      required
                     />
                     {errors.ticketCount && (
                       <div id="ticketCount-error" className="error mt-2">
@@ -281,6 +344,7 @@ export default function BookingPage() {
                         onChange={(e) => setForm((s) => ({ ...s, fullName: e.target.value }))}
                         aria-invalid={Boolean(errors.fullName)}
                         aria-describedby={errors.fullName ? 'fullName-error' : undefined}
+                        required
                       />
                       {errors.fullName && (
                         <div id="fullName-error" className="error mt-2">
@@ -302,6 +366,7 @@ export default function BookingPage() {
                         onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
                         aria-invalid={Boolean(errors.email)}
                         aria-describedby={errors.email ? 'email-error' : undefined}
+                        required
                       />
                       {errors.email && (
                         <div id="email-error" className="error mt-2">
@@ -324,6 +389,7 @@ export default function BookingPage() {
                       onChange={(e) => setForm((s) => ({ ...s, phoneNumber: e.target.value }))}
                       aria-invalid={Boolean(errors.phoneNumber)}
                       aria-describedby={errors.phoneNumber ? 'phone-error' : undefined}
+                      required
                     />
                     {errors.phoneNumber && (
                       <div id="phone-error" className="error mt-2">
@@ -380,8 +446,8 @@ export default function BookingPage() {
                     </button>
                   </div>
 
-                  <p className="text-xs text-white/55">
-                    After you complete payment in your UPI app, you’ll come back here and enter the transaction ID.
+                  <p className="text-xs text-white/55 whitespace-nowrap overflow-x-auto">
+                    Share your details, proceed to payment, then enter your transaction ID to confirm your seats.
                   </p>
                 </form>
               ) : (
@@ -423,7 +489,9 @@ export default function BookingPage() {
                         <div className="mt-3 text-sm text-white/80">
                           Amount payable: <span className="font-semibold text-white">₹ {amountPayable}</span>
                         </div>
-                        <div className="mt-1 text-xs text-white/60">(₹ 250 × {Math.max(1, Math.floor(form.ticketCount || 1))} tickets)</div>
+                        <div className="mt-1 text-xs text-white/60">
+                          (₹ {amountPayable} × {Math.max(1, Math.floor(form.ticketCount || 1))} tickets)
+                        </div>
                       </div>
 
                       <div className="mx-auto w-full max-w-[320px] flex-shrink-0">
@@ -508,15 +576,15 @@ export default function BookingPage() {
             <div className="mt-4 space-y-3 text-sm text-white/75">
               <div className="flex items-start justify-between gap-3">
                 <div className="text-white/60">Selected show</div>
-                <div className="text-right text-white">{selectedShow ? selectedShow.title : '—'}</div>
+                <div className="text-right text-white">{selectedAuditorium ? selectedAuditorium.showName : '—'}</div>
               </div>
               <div className="flex items-start justify-between gap-3">
                 <div className="text-white/60">When</div>
-                <div className="text-right text-white">{selectedShow ? selectedShow.dateLabel : '—'}</div>
+                <div className="text-right text-white">{selectedAuditorium ? formattedWhen : '—'}</div>
               </div>
               <div className="flex items-start justify-between gap-3">
                 <div className="text-white/60">Where</div>
-                <div className="text-right text-white">{selectedShow ? selectedShow.venue : '—'}</div>
+                <div className="text-right text-white">{selectedAuditorium ? selectedAuditorium.auditoriumName : '—'}</div>
               </div>
               <div className="flex items-start justify-between gap-3">
                 <div className="text-white/60">Tickets</div>

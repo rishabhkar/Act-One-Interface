@@ -152,8 +152,7 @@ export const siteContent: SiteContent = {
   navigation: {
     items: [
       { label: 'Home', href: '/' },
-      { label: 'Shows', href: '/shows' },
-      { label: 'Book', href: '/book' },
+      { label: 'Book Show', href: '/shows' },
       { label: 'Gallery', href: '/gallery' },
       { label: 'Workshops', href: '/gallery/workshops' },
       { label: 'Members', href: '/members' },
