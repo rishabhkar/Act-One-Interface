@@ -4,15 +4,15 @@ import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { siteContent } from '../content/siteContent'
-import heroLogoGif from '../data/images/Logo Image.png'
+import heroLogoGif from '../data/images/Logo Image.webp'
 import { memberProfiles } from '../data/members'
 
 const logoVideoUrl = new URL('/media/logo.webm', import.meta.url).toString()
-const logoPngUrl = new URL('/media/logo.png', import.meta.url).toString()
+const logoPngUrl = new URL('/media/logo.webp', import.meta.url).toString()
 
 // gather gallery images from previousPlays for background slideshow
 const previousPlayImages = Object.values(
-  import.meta.glob('../data/images/gallery/previousPlays/**/*.{jpg,jpeg,png,JPG,JPEG}', {
+  import.meta.glob('../data/images/gallery/previousPlays/**/*.{webp}', {
     eager: true,
     import: 'default',
   }),

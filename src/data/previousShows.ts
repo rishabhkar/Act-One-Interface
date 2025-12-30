@@ -17,7 +17,7 @@ export const previousShows: PreviousShow[] = [
   {
     id: 'aayesha',
     title: 'Aayesha',
-    imageSrc: new URL('./images/previousCards/Aayesha.jpeg', import.meta.url).href,
+    imageSrc: new URL('./images/previousCards/Aayesha.webp', import.meta.url).href,
     date: '27th March 2025',
     venue: 'Muktadhara Auditorium',
     language: 'Bengali',
@@ -26,7 +26,7 @@ export const previousShows: PreviousShow[] = [
   {
     id: 'chenni',
     title: 'Chenni',
-    imageSrc: new URL('./images/previousCards/Chenni.jpg', import.meta.url).href,
+    imageSrc: new URL('./images/previousCards/Chenni.webp', import.meta.url).href,
     date: '10th March 2024',
     venue: 'LTG Auditorium',
     writtenBy: 'Anup Chakraborty',
@@ -36,7 +36,7 @@ export const previousShows: PreviousShow[] = [
   {
     id: 'chup-adalat-cholche',
     title: 'Chup Adalat Cholche',
-    imageSrc: new URL('./images/previousCards/Chup Adalat Cholche.jpg', import.meta.url).href,
+    imageSrc: new URL('./images/previousCards/Chup Adalat Cholche.webp', import.meta.url).href,
     date: '2nd and 3rd December 2023',
     venue: 'Muktadhara Auditorium',
     writtenBy: 'Vijay Tendulkar',
@@ -47,7 +47,7 @@ export const previousShows: PreviousShow[] = [
   {
     id: 'daag',
     title: 'Daag',
-    imageSrc: new URL('./images/previousCards/Daag.jpeg', import.meta.url).href,
+    imageSrc: new URL('./images/previousCards/Daag.webp', import.meta.url).href,
     date: '1st June 2025',
     venue: 'Muktadhara Auditorium',
     writtenBy: 'Pradipta Bhattacharya',
@@ -59,7 +59,7 @@ export const previousShows: PreviousShow[] = [
   {
     id: 'pursuit-of-pleasure',
     title: 'Pursuit of Pleasure',
-    imageSrc: new URL('./images/previousCards/Pursuit of Pleasure.jpg', import.meta.url).href,
+    imageSrc: new URL('./images/previousCards/Pursuit of Pleasure.webp', import.meta.url).href,
     music: 'Soma Kar',
     maskConceptDirection: 'Rabi Shankar Kar',
     language: 'Bengali',
@@ -68,7 +68,7 @@ export const previousShows: PreviousShow[] = [
   {
     id: 'restaurant',
     title: 'Restaurant',
-    imageSrc: new URL('./images/previousCards/Restaurant.png', import.meta.url).href,
+    imageSrc: new URL('./images/previousCards/Restaurant.webp', import.meta.url).href,
     date: '8th December 2024',
     venue: 'Muktadhara Auditorium',
     writtenBy: 'Zulfiqquar Zinna',
@@ -77,7 +77,7 @@ export const previousShows: PreviousShow[] = [
   {
     id: 'sadhonbabur-sondhyeo',
     title: 'Sadhonbabur Sondhyeo',
-    imageSrc: new URL('./images/previousCards/Sadhonbabur Sondhyeo.jpg', import.meta.url).href,
+    imageSrc: new URL('./images/previousCards/Sadhonbabur Sondhyeo.webp', import.meta.url).href,
     date: '24th March 2022',
     venue: 'Deshmukh Auditorium',
     writtenBy: 'Anil Dey',
@@ -86,7 +86,7 @@ export const previousShows: PreviousShow[] = [
   {
     id: 'the-father',
     title: 'The Father',
-    imageSrc: new URL('./images/previousCards/The Father.jpg', import.meta.url).href,
+    imageSrc: new URL('./images/previousCards/The Father.webp', import.meta.url).href,
     date: '8th April 2023',
     venue: 'LTG Auditorium',
     writtenBy: 'August Strindburh',
@@ -96,7 +96,7 @@ export const previousShows: PreviousShow[] = [
   {
     id: 'the-storyteller',
     title: 'The Storyteller',
-    imageSrc: new URL('./images/previousCards/The Storyteller.jpg', import.meta.url).href,
+    imageSrc: new URL('./images/previousCards/The Storyteller.webp', import.meta.url).href,
     date: '11th March 2022',
     venue: 'LTG Auditorium',
     writtenBy: "Inspired by Martin McDonagh's 'The Pillowman'",
@@ -105,7 +105,7 @@ export const previousShows: PreviousShow[] = [
   {
     id: 'uttara',
     title: 'Uttara',
-    imageSrc: new URL('./images/previousCards/Uttara.png', import.meta.url).href,
+    imageSrc: new URL('./images/previousCards/Uttara.webp', import.meta.url).href,
     date: '8th December 2024',
     venue: 'Muktadhara Auditorium',
     writtenBy: 'Dr. Sisir Kumar Das',

@@ -15,32 +15,32 @@ type BgItem = {
 
 const DEFAULT_BG: BgItem[] = [
   {
-    src: '/media/bg/01.jpg',
+    src: '/media/bg/01.webp',
     alt: 'Stage background 01',
     theme: { a: 'rgba(255,106,26,0.62)', b: 'rgba(45,92,255,0.54)', a2: 'rgba(255,150,90,0.22)' },
   },
   {
-    src: '/media/bg/02.jpg',
+    src: '/media/bg/02.webp',
     alt: 'Stage background 02',
     theme: { a: 'rgba(255,142,69,0.58)', b: 'rgba(80,140,255,0.52)', b2: 'rgba(25,70,255,0.18)' },
   },
   {
-    src: '/media/bg/03.jpg',
+    src: '/media/bg/03.webp',
     alt: 'Stage background 03',
     theme: { a: 'rgba(255,110,55,0.56)', b: 'rgba(60,110,255,0.58)' },
   },
   {
-    src: '/media/bg/04.jpg',
+    src: '/media/bg/04.webp',
     alt: 'Stage background 04',
     theme: { a: 'rgba(255,106,26,0.58)', b: 'rgba(45,92,255,0.62)' },
   },
   {
-    src: '/media/bg/05.jpg',
+    src: '/media/bg/05.webp',
     alt: 'Stage background 05',
     theme: { a: 'rgba(255,130,60,0.74)', b: 'rgba(48,96,255,0.45)', a2: 'rgba(255,170,120,0.18)' },
   },
   {
-    src: '/media/bg/06.jpg',
+    src: '/media/bg/06.webp',
     alt: 'Stage background 06',
     theme: { a: 'rgba(255,95,40,0.62)', b: 'rgba(55,105,255,0.56)' },
   },

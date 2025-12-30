@@ -429,7 +429,7 @@ export default function BookingPage() {
                       <div className="mx-auto w-full max-w-[320px] flex-shrink-0">
                         <div className="overflow-hidden rounded-xl border border-white/10 bg-black/20 p-3">
                           <img
-                            src={new URL('../data/payments/QR Code.jpeg', import.meta.url).toString()}
+                            src={new URL('../data/payments/QR Code.webp', import.meta.url).toString()}
                             alt="Prarambh UPI QR code"
                             className="h-auto w-full"
                             decoding="async"

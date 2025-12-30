@@ -3,7 +3,7 @@ import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import FormField from '../components/FormField'
 
-import qrWhite from '../data/payments/QR Code White.jpeg'
+import qrWhite from '../data/payments/QR Code White.webp'
 
 type SupportForm = {
   fullName: string

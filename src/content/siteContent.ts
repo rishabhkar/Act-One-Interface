@@ -173,7 +173,7 @@ export const siteContent: SiteContent = {
       centerMedia: {
         type: 'videoWithFallback',
         videoPath: 'public/media/logo.webm',
-        fallbackImagePath: 'public/media/logo.png',
+        fallbackImagePath: 'public/media/logo.webp',
         caption: 'STORIES THAT BREATHE ON STAGE.',
       },
     },

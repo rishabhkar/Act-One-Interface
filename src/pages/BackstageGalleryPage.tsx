@@ -12,15 +12,15 @@ function clampIndex(i: number, len: number) {
 }
 
 const backstageImages: GalleryImage[] = [
-  { id: 'backStage-01', src: new URL('../data/images/gallery/backStage/backStage-01.jpg', import.meta.url).href, alt: 'Backstage' },
-  { id: 'backStage-02', src: new URL('../data/images/gallery/backStage/backStage-02.jpg', import.meta.url).href, alt: 'Backstage' },
-  { id: 'backStage-03', src: new URL('../data/images/gallery/backStage/backStage-03.JPG', import.meta.url).href, alt: 'Backstage' },
-  { id: 'backStage-04', src: new URL('../data/images/gallery/backStage/backStage-04.jfif', import.meta.url).href, alt: 'Backstage' },
-  { id: 'backStage-05', src: new URL('../data/images/gallery/backStage/backStage-05.JPG', import.meta.url).href, alt: 'Backstage' },
-  { id: 'backStage-06', src: new URL('../data/images/gallery/backStage/backStage-06.jpeg', import.meta.url).href, alt: 'Backstage' },
-  { id: 'backStage-07', src: new URL('../data/images/gallery/backStage/backStage-07.jpeg', import.meta.url).href, alt: 'Backstage' },
-  { id: 'backStage-08', src: new URL('../data/images/gallery/backStage/backStage-08.jpeg', import.meta.url).href, alt: 'Backstage' },
-  { id: 'backStage-09', src: new URL('../data/images/gallery/backStage/backStage-09.jpeg', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-01', src: new URL('../data/images/gallery/backStage/backStage-01.webp', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-02', src: new URL('../data/images/gallery/backStage/backStage-02.webp', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-03', src: new URL('../data/images/gallery/backStage/backStage-03.webp', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-04', src: new URL('../data/images/gallery/backStage/backStage-04.webp', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-05', src: new URL('../data/images/gallery/backStage/backStage-05.webp', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-06', src: new URL('../data/images/gallery/backStage/backStage-06.webp', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-07', src: new URL('../data/images/gallery/backStage/backStage-07.webp', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-08', src: new URL('../data/images/gallery/backStage/backStage-08.webp', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-09', src: new URL('../data/images/gallery/backStage/backStage-09.webp', import.meta.url).href, alt: 'Backstage' },
 ]
 
 export default function BackstageGalleryPage() {

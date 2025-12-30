@@ -10,8 +10,11 @@ export default function Layout({ children }: PropsWithChildren) {
   const location = useLocation()
 
   useEffect(() => {
+    // If navigating to a fragment (hash) let the destination page handle scrolling to the anchor.
+    if (location.hash) return
+
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-  }, [location.pathname])
+  }, [location.pathname, location.hash])
 
   return (
     <div className="min-h-dvh">
