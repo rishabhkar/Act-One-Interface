@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
+import { useNoCollisionBackground } from '../lib/pageBackground'
 
 type BgItem = {
   src: string
@@ -90,14 +92,51 @@ function useLowVisualPriority() {
 }
 
 export default function BackgroundLayers() {
+  const location = useLocation()
+  const pageBg = useNoCollisionBackground(location.pathname, { excludeHome: true })
+
   const items = useMemo(() => DEFAULT_BG, [])
   const [index, setIndex] = useState(0)
   const [fade, setFade] = useState<0 | 1>(0)
+  const [pageBgCurrent, setPageBgCurrent] = useState<string | null>(pageBg)
+  const [pageBgNext, setPageBgNext] = useState<string | null>(null)
+  const [pageBgFade, setPageBgFade] = useState(false)
+  const fadeTimeout = useRef<number | null>(null)
   const reducedMotion = usePrefersReducedMotion()
   const lowVisualPriority = useLowVisualPriority()
 
+  // If we're using per-page backgrounds (all pages except home), skip cycling DEFAULT_BG.
+  const usePerPageBackground = !!pageBg
+
+  // Crossfade between per-page backgrounds on route change.
+  useEffect(() => {
+    if (!usePerPageBackground) {
+      setPageBgCurrent(null)
+      setPageBgNext(null)
+      setPageBgFade(false)
+      return
+    }
+    if (!pageBg) return
+
+    if (pageBgCurrent === pageBg) return
+    setPageBgNext(pageBg)
+    setPageBgFade(true)
+
+    if (fadeTimeout.current) window.clearTimeout(fadeTimeout.current)
+    fadeTimeout.current = window.setTimeout(() => {
+      setPageBgCurrent(pageBg)
+      setPageBgNext(null)
+      setPageBgFade(false)
+    }, 800)
+
+    return () => {
+      if (fadeTimeout.current) window.clearTimeout(fadeTimeout.current)
+    }
+  }, [pageBg, usePerPageBackground, pageBgCurrent])
+
   // Crossfade state machine: fade to next, swap index, fade back in.
   useEffect(() => {
+    if (usePerPageBackground) return
     if (reducedMotion || lowVisualPriority) return
 
     let cancelled = false
@@ -118,7 +157,7 @@ export default function BackgroundLayers() {
       cancelled = true
       window.clearInterval(id)
     }
-  }, [items.length, reducedMotion, lowVisualPriority])
+  }, [items.length, reducedMotion, lowVisualPriority, usePerPageBackground])
 
   const active = items[index]
   const next = items[(index + 1) % items.length]
@@ -165,17 +204,48 @@ export default function BackgroundLayers() {
 
       {/* Background image */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0" style={{ opacity: lowVisualPriority ? 0.62 : 0.55 }}>
-          <img
-            src={active.src}
-            alt={active.alt}
-            loading={lowVisualPriority ? 'eager' : 'eager'}
-            className={'h-full w-full object-cover ' + (lowVisualPriority ? '' : 'will-change-transform motion-safe:animate-drift')}
-            decoding="async"
-            onError={(e) => {
-              ;(e.currentTarget as HTMLImageElement).classList.add('img-error')
-            }}
-          />
+        <div className="absolute inset-0" style={{ opacity: lowVisualPriority ? 0.5 : 0.44 }}>
+          {usePerPageBackground ? (
+            <>
+              {pageBgCurrent ? (
+                <img
+                  key={pageBgCurrent}
+                  src={pageBgCurrent}
+                  alt="Page background"
+                  loading={lowVisualPriority ? 'eager' : 'eager'}
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${pageBgFade ? 'opacity-0' : 'opacity-100'}`}
+                  decoding="async"
+                  onError={(e) => {
+                    ;(e.currentTarget as HTMLImageElement).classList.add('img-error')
+                  }}
+                />
+              ) : null}
+              {pageBgNext ? (
+                <img
+                  key={pageBgNext}
+                  src={pageBgNext}
+                  alt="Page background"
+                  loading={lowVisualPriority ? 'eager' : 'eager'}
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${pageBgFade ? 'opacity-100' : 'opacity-0'}`}
+                  decoding="async"
+                  onError={(e) => {
+                    ;(e.currentTarget as HTMLImageElement).classList.add('img-error')
+                  }}
+                />
+              ) : null}
+            </>
+          ) : (
+            <img
+              src={active.src}
+              alt={active.alt}
+              loading={lowVisualPriority ? 'eager' : 'eager'}
+              className={'h-full w-full object-cover ' + (lowVisualPriority ? '' : 'will-change-transform motion-safe:animate-drift')}
+              decoding="async"
+              onError={(e) => {
+                ;(e.currentTarget as HTMLImageElement).classList.add('img-error')
+              }}
+            />
+          )}
         </div>
       </div>
 
