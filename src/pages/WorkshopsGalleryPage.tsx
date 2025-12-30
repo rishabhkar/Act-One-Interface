@@ -12,17 +12,17 @@ function clampIndex(i: number, len: number) {
 }
 
 const workshopsImages: GalleryImage[] = [
-  { id: 'workshops-01', src: new URL('../data/images/gallery/workshops/workshops-01.jpg', import.meta.url).href, alt: 'Workshops' },
-  { id: 'workshops-02', src: new URL('../data/images/gallery/workshops/workshops-02.jpg', import.meta.url).href, alt: 'Workshops' },
-  { id: 'workshops-03', src: new URL('../data/images/gallery/workshops/workshops-03.jpg', import.meta.url).href, alt: 'Workshops' },
-  { id: 'workshops-04', src: new URL('../data/images/gallery/workshops/workshops-04.jpg', import.meta.url).href, alt: 'Workshops' },
-  { id: 'workshops-05', src: new URL('../data/images/gallery/workshops/workshops-05.jpeg', import.meta.url).href, alt: 'Workshops' },
-  { id: 'workshops-06', src: new URL('../data/images/gallery/workshops/workshops-06.jpeg', import.meta.url).href, alt: 'Workshops' },
-  { id: 'workshops-07', src: new URL('../data/images/gallery/workshops/workshops-07.jpeg', import.meta.url).href, alt: 'Workshops' },
-  { id: 'workshops-08', src: new URL('../data/images/gallery/workshops/workshops-08.jpeg', import.meta.url).href, alt: 'Workshops' },
-  { id: 'workshops-09', src: new URL('../data/images/gallery/workshops/workshops-09.jpeg', import.meta.url).href, alt: 'Workshops' },
-  { id: 'workshops-10', src: new URL('../data/images/gallery/workshops/workshops-10.jpeg', import.meta.url).href, alt: 'Workshops' },
-  { id: 'workshops-11', src: new URL('../data/images/gallery/workshops/workshops-11.jpeg', import.meta.url).href, alt: 'Workshops' },
+  { id: 'workshops-01', src: new URL('../data/images/gallery/workshops/workshops-01.webp', import.meta.url).href, alt: 'Workshops' },
+  { id: 'workshops-02', src: new URL('../data/images/gallery/workshops/workshops-02.webp', import.meta.url).href, alt: 'Workshops' },
+  { id: 'workshops-03', src: new URL('../data/images/gallery/workshops/workshops-03.webp', import.meta.url).href, alt: 'Workshops' },
+  { id: 'workshops-04', src: new URL('../data/images/gallery/workshops/workshops-04.webp', import.meta.url).href, alt: 'Workshops' },
+  { id: 'workshops-05', src: new URL('../data/images/gallery/workshops/workshops-05.webp', import.meta.url).href, alt: 'Workshops' },
+  { id: 'workshops-06', src: new URL('../data/images/gallery/workshops/workshops-06.webp', import.meta.url).href, alt: 'Workshops' },
+  { id: 'workshops-07', src: new URL('../data/images/gallery/workshops/workshops-07.webp', import.meta.url).href, alt: 'Workshops' },
+  { id: 'workshops-08', src: new URL('../data/images/gallery/workshops/workshops-08.webp', import.meta.url).href, alt: 'Workshops' },
+  { id: 'workshops-09', src: new URL('../data/images/gallery/workshops/workshops-09.webp', import.meta.url).href, alt: 'Workshops' },
+  { id: 'workshops-10', src: new URL('../data/images/gallery/workshops/workshops-10.webp', import.meta.url).href, alt: 'Workshops' },
+  { id: 'workshops-11', src: new URL('../data/images/gallery/workshops/workshops-11.webp', import.meta.url).href, alt: 'Workshops' },
 ]
 
 export default function WorkshopsGalleryPage() {

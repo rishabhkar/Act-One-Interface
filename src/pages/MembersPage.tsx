@@ -106,14 +106,36 @@ export default function MembersPage() {
   useEffect(() => {
     const hash = location.hash?.replace('#', '')
     if (!hash) return
-    const target = document.getElementById(hash)
-    if (target) {
-      const rect = target.getBoundingClientRect()
-      const absoluteTop = rect.top + window.scrollY
-      const targetOffset = absoluteTop - (window.innerHeight / 2 - rect.height / 2)
-      window.scrollTo({ top: Math.max(targetOffset, 0), behavior: 'smooth' })
-      const heading = target.querySelector('h2') as HTMLElement | null
-      heading?.focus({ preventScroll: true })
+
+    // Retry until the target exists (SectionReveal may delay render / animations).
+    let attempts = 0
+    let cancelled = false
+
+    const scrollToTarget = () => {
+      if (cancelled) return
+      const target = document.getElementById(hash)
+      if (target) {
+        const rect = target.getBoundingClientRect()
+        const absoluteTop = rect.top + window.scrollY
+        const targetOffset = absoluteTop - (window.innerHeight / 2 - rect.height / 2)
+        window.scrollTo({ top: Math.max(targetOffset, 0), behavior: 'smooth' })
+        const heading = target.querySelector('h2') as HTMLElement | null
+        heading?.focus({ preventScroll: true })
+        return
+      }
+
+      attempts += 1
+      if (attempts <= 20) {
+        // try again shortly
+        setTimeout(scrollToTarget, 100)
+      }
+    }
+
+    // Kick off on next frame so initial DOM updates settle.
+    requestAnimationFrame(scrollToTarget)
+
+    return () => {
+      cancelled = true
     }
   }, [location.hash])
 

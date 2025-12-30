@@ -5,7 +5,7 @@ import clsx from 'clsx'
 import { siteContent } from '../content/siteContent'
 
 // add small logo URL
-const smallLogoUrl = new URL('../data/images/Small Logo.png', import.meta.url).toString()
+const smallLogoUrl = new URL('../data/images/Small Logo.webp', import.meta.url).toString()
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)

@@ -16,13 +16,13 @@ export type PlayGallerySection = {
 export const galleryImages: GalleryImage[] = [
   {
     id: '472282411_895240999346211_1072480196469497077_n',
-    src: new URL('./images/gallery/onlyGallery/472282411_895240999346211_1072480196469497077_n.jpg', import.meta.url).href,
+    src: new URL('./images/gallery/onlyGallery/472282411_895240999346211_1072480196469497077_n.webp', import.meta.url).href,
     alt: 'Gallery image',
     onlyGallery: true,
   },
   {
     id: '472284277_895240976012880_5041434027962513917_n',
-    src: new URL('./images/gallery/onlyGallery/472284277_895240976012880_5041434027962513917_n.jpg', import.meta.url).href,
+    src: new URL('./images/gallery/onlyGallery/472284277_895240976012880_5041434027962513917_n.webp', import.meta.url).href,
     alt: 'Gallery image',
     onlyGallery: true,
   },
@@ -41,10 +41,9 @@ export const playGallerySections: PlayGallerySection[] = [
       "Play ‘Chenni’ tells the story of a Kannad girl named Chenni, born into a Dalit family in a remote village in Karnataka. Her father, Kariappa, and her mother, Sabri, are deeply religious people who believe in God and blindly follow social customs and religious practices. When Chenni falls seriously ill at a very young age, her parents, instead of seeking medical treatment, take her to a temple priest. The priest compels them to dedicate little Chenni to God, making her a Basvi. The Basvi tradition is a social system in which girls are symbolically married to God and, after attaining the age of eighteen, are made available to physically satisfy Brahmin guests.  Chenni becomes a victim of these rigid customs and oppressive social systems. Exploited by thousand-year-old rituals and beliefs, she ultimately commits suicide in defiance of the abhorrent feudal system. Her death serves as a powerful foreshadowing of the collapse of that system, perhaps marking the final nail in its coffin.",
     images: Array.from({ length: 8 }, (_, i) => {
       const n = String(i + 1).padStart(2, '0')
-      const ext = i < 2 ? 'jpg' : 'JPG'
       return {
         id: `chenni-${n}`,
-        src: new URL(`./images/gallery/previousPlays/Chenni/chenni-${n}.${ext}`, import.meta.url).href,
+        src: new URL(`./images/gallery/previousPlays/Chenni/chenni-${n}.webp`, import.meta.url).href,
         alt: 'Chenni',
       }
     }),
@@ -57,7 +56,7 @@ export const playGallerySections: PlayGallerySection[] = [
       return {
         id: `chup-adalat-cholche-${n}`,
         src: new URL(
-          `./images/gallery/previousPlays/ChupAdalatCholche/chup-adalat-cholche-${n}.jpeg`,
+          `./images/gallery/previousPlays/ChupAdalatCholche/chup-adalat-cholche-${n}.webp`,
           import.meta.url,
         ).href,
         alt: 'Chup Adalat Cholche',
@@ -71,7 +70,7 @@ export const playGallerySections: PlayGallerySection[] = [
       const n = String(i + 1).padStart(2, '0')
       return {
         id: `daag-${n}`,
-        src: new URL(`./images/gallery/previousPlays/Daag/daag-${n}.JPG`, import.meta.url).href,
+        src: new URL(`./images/gallery/previousPlays/Daag/daag-${n}.webp`, import.meta.url).href,
         alt: 'Daag',
       }
     }),
@@ -86,7 +85,7 @@ export const playGallerySections: PlayGallerySection[] = [
       return {
         id: `persuitof-pleasure-${n}`,
         src: new URL(
-          `./images/gallery/previousPlays/PersuitofPleasure/persuitof-pleasure-${n}.jpg`,
+          `./images/gallery/previousPlays/PersuitofPleasure/persuitof-pleasure-${n}.webp`,
           import.meta.url,
         ).href,
         alt: 'Persuit of Pleasure',
@@ -100,7 +99,7 @@ export const playGallerySections: PlayGallerySection[] = [
       const n = String(i + 1).padStart(2, '0')
       return {
         id: `restaurant-${n}`,
-        src: new URL(`./images/gallery/previousPlays/Restaurant/restaurant-${n}.JPG`, import.meta.url).href,
+        src: new URL(`./images/gallery/previousPlays/Restaurant/restaurant-${n}.webp`, import.meta.url).href,
         alt: 'Restaurant',
       }
     }),
@@ -114,7 +113,7 @@ export const playGallerySections: PlayGallerySection[] = [
       {
         id: 'sadhonbabur-sondhyeo-01',
         src: new URL(
-          './images/gallery/previousPlays/SadhonbaburSondhyeo/sadhonbabur-sondhyeo-01.jpg',
+          './images/gallery/previousPlays/SadhonbaburSondhyeo/sadhonbabur-sondhyeo-01.webp',
           import.meta.url,
         ).href,
         alt: 'Sadhonbabur Sondhyeo',
@@ -124,7 +123,7 @@ export const playGallerySections: PlayGallerySection[] = [
         return {
           id: `sadhonbabur-sondhyeo-${n}`,
           src: new URL(
-            `./images/gallery/previousPlays/SadhonbaburSondhyeo/sadhonbabur-sondhyeo-${n}.jpeg`,
+            `./images/gallery/previousPlays/SadhonbaburSondhyeo/sadhonbabur-sondhyeo-${n}.webp`,
             import.meta.url,
           ).href,
           alt: 'Sadhonbabur Sondhyeo',
@@ -140,7 +139,7 @@ export const playGallerySections: PlayGallerySection[] = [
       return {
         id: `shades-of-women-${n}`,
         src: new URL(
-          `./images/gallery/previousPlays/ShadesOfWomen/shades-of-women-${n}.jpg`,
+          `./images/gallery/previousPlays/ShadesOfWomen/shades-of-women-${n}.webp`,
           import.meta.url,
         ).href,
         alt: 'Shades of Women',
@@ -157,7 +156,7 @@ export const playGallerySections: PlayGallerySection[] = [
         const n = String(i + 1).padStart(2, '0')
         return {
           id: `the-father-${n}`,
-          src: new URL(`./images/gallery/previousPlays/TheFather/the-father-${n}.jpg`, import.meta.url).href,
+          src: new URL(`./images/gallery/previousPlays/TheFather/the-father-${n}.webp`, import.meta.url).href,
           alt: 'The Father',
         }
       }),
@@ -165,7 +164,7 @@ export const playGallerySections: PlayGallerySection[] = [
         const n = String(i + 6).padStart(2, '0')
         return {
           id: `the-father-${n}`,
-          src: new URL(`./images/gallery/previousPlays/TheFather/the-father-${n}.JPG`, import.meta.url).href,
+          src: new URL(`./images/gallery/previousPlays/TheFather/the-father-${n}.webp`, import.meta.url).href,
           alt: 'The Father',
         }
       }),
@@ -181,7 +180,7 @@ export const playGallerySections: PlayGallerySection[] = [
       return {
         id: `the-story-teller-${n}`,
         src: new URL(
-          `./images/gallery/previousPlays/TheStoryTeller/the-story-teller-${n}.JPG`,
+          `./images/gallery/previousPlays/TheStoryTeller/the-story-teller-${n}.webp`,
           import.meta.url,
         ).href,
         alt: 'The Storyteller',
@@ -197,7 +196,7 @@ export const playGallerySections: PlayGallerySection[] = [
       const n = String(i + 1).padStart(2, '0')
       return {
         id: `uttara-${n}`,
-        src: new URL(`./images/gallery/previousPlays/Uttara/uttara-${n}.JPG`, import.meta.url).href,
+        src: new URL(`./images/gallery/previousPlays/Uttara/uttara-${n}.webp`, import.meta.url).href,
         alt: 'Uttara',
       }
     }),

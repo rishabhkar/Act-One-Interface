@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 const backgroundImages = Object.values(
-  import.meta.glob('../data/images/gallery/background/*.{jpg,jpeg,png,JPG,JPEG}', {
+  import.meta.glob('../data/images/gallery/background/*.{webp}', {
     eager: true,
     import: 'default',
   }),
