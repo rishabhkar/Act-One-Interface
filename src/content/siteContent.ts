@@ -157,7 +157,8 @@ export const siteContent: SiteContent = {
       { label: 'Workshops', href: '/gallery/workshops' },
       { label: 'Members', href: '/members' },
       { label: 'Previous shows', href: '/previous-shows' },
-      { label: 'Support & Feedback', href: '/support-us' },
+      { label: 'Support Us', href: '/support-us' },
+      { label: 'Feedback', href: '/feedback' },
       { label: 'Contact', href: '/contact' },
     ],
   },
@@ -197,7 +198,7 @@ export const siteContent: SiteContent = {
     bannerPanel: {
       leftTitle: 'Support & Feedback',
       leftText: 'Help us keep rehearsal rooms alive—and tell us what stayed with you after the curtain call.',
-      rightCta: { label: 'Support & Feedback', href: '/support-us' },
+      rightCta: { label: 'Support Us', href: '/support-us' },
     },
     upcomingShowsSection: {
       title: 'Upcoming shows',

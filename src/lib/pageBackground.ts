@@ -1,84 +1,71 @@
 import { useEffect, useState } from 'react'
 
 const backgroundImages = Object.values(
-  import.meta.glob('../data/images/gallery/background/*.{webp}', {
-    eager: true,
-    import: 'default',
-  }),
+    import.meta.glob('../data/images/gallery/background/*.{webp}', {
+      eager: true,
+      import: 'default',
+    }),
 ) as string[]
 
-function shuffle<T>(arr: T[]) {
-  const out = arr.slice()
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[out[i], out[j]] = [out[j], out[i]]
-  }
-  return out
-}
-
-function loadQueue(): string[] {
-  try {
-    const raw = sessionStorage.getItem('prarambh:bg:queue')
-    const parsed = raw ? (JSON.parse(raw) as unknown) : null
-    if (Array.isArray(parsed) && parsed.every((x) => typeof x === 'string')) return parsed
-  } catch {
-    // ignore
-  }
-  const fresh = shuffle(backgroundImages)
-  try {
-    sessionStorage.setItem('prarambh:bg:queue', JSON.stringify(fresh))
-  } catch {
-    // ignore
-  }
-  return fresh
-}
-
-function saveQueue(queue: string[]) {
-  try {
-    sessionStorage.setItem('prarambh:bg:queue', JSON.stringify(queue))
-  } catch {
-    // ignore
+function mulberry32(seed: number) {
+  return function () {
+    let t = (seed += 0x6d2b79f5)
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
 }
 
-function nextFromQueue(current: string | null) {
-  if (!backgroundImages.length) return { chosen: null as string | null, queue: [] as string[] }
-
-  let queue = loadQueue()
-  if (!queue.length) queue = shuffle(backgroundImages)
-
-  // Ensure next isn't the current one if we have alternatives.
-  let chosen = queue.shift() ?? null
-  if (chosen && current && chosen === current && backgroundImages.length > 1) {
-    const alt = queue.shift() ?? null
-    if (alt) {
-      queue.push(chosen)
-      chosen = alt
-    }
+function hashString(str: string) {
+  let h = 2166136261
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 16777619)
   }
-
-  if (!queue.length) queue = shuffle(backgroundImages)
-  saveQueue(queue)
-
-  return { chosen, queue }
+  return h >>> 0
 }
 
 export function useNoCollisionBackground(pathname: string, { excludeHome = true } = {}) {
   const initialSrc = (!excludeHome || pathname !== '/') && backgroundImages.length ? backgroundImages[0] : null
   const [src, setSrc] = useState<string | null>(initialSrc)
+  const [bucket, setBucket] = useState(() => Math.floor(Date.now() / (1000 * 60 * 10)))
+
+  // Update time bucket periodically so backgrounds can change occasionally even without navigation.
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setBucket(Math.floor(Date.now() / (1000 * 60 * 10)))
+    }, 30_000)
+    return () => window.clearInterval(id)
+  }, [])
 
   useEffect(() => {
     if (excludeHome && pathname === '/') return
     if (!backgroundImages.length) return
 
-    // Use functional update so we don't need `src` in deps.
-    setTimeout(() => {
-      setSrc((current) => {
-        const { chosen } = nextFromQueue(current)
-        return chosen ?? current
-      })
-    }, 0)
-  }, [pathname, excludeHome])
+    const key = 'prarambh:bg:active'
+    const seed = hashString(`${pathname}:${bucket}`)
+    const rand = mulberry32(seed)
+
+    // Try to avoid collision with currently active background.
+    const preferred = backgroundImages[Math.floor(rand() * backgroundImages.length)]
+    const active = sessionStorage.getItem(key)
+
+    let chosen = preferred
+    if (active && backgroundImages.length > 1 && preferred === active) {
+      // Choose the next one deterministically.
+      const idx = backgroundImages.indexOf(preferred)
+      chosen = backgroundImages[(idx + 1) % backgroundImages.length]
+    }
+
+    sessionStorage.setItem(key, chosen)
+    queueMicrotask(() => setSrc(chosen))
+
+    return () => {
+      // Release background only if we're still the owner.
+      const current = sessionStorage.getItem(key)
+      if (current === chosen) sessionStorage.removeItem(key)
+    }
+  }, [pathname, excludeHome, bucket])
 
   // Ensure home (or excluded routes) clear the background.
   useEffect(() => {

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import FormField from '../components/FormField'
+import { submitFeedback } from '../lib/feedback'
 
 type FeedbackForm = {
   fullName: string
@@ -18,8 +19,7 @@ function validateFeedback(form: FeedbackForm) {
   if (!form.email.trim()) errors.email = 'Email is required.'
   else if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) errors.email = 'Enter a valid email.'
   if (!form.phone.trim()) errors.phone = 'Phone Number is required.'
-  if (!form.showName.trim()) errors.showName = 'Show Name is required.'
-  if (!form.showVenue.trim()) errors.showVenue = 'Show Venue is required.'
+  // showName and showVenue are optional — backend sample doesn't require them
   if (!form.message.trim()) errors.message = 'Feedback message is required.'
   return errors
 }
@@ -35,6 +35,9 @@ export default function FeedbackPage() {
   })
   const [errors, setErrors] = useState<Partial<Record<keyof FeedbackForm, string>>>({})
   const [submitted, setSubmitted] = useState(false)
+  const [submitState, setSubmitState] = useState<'idle' | 'loading' | 'error'>('idle')
+  const [submitError, setSubmitError] = useState<string>('')
+  const [debugResult, setDebugResult] = useState<string | null>(null)
 
   const panelStyle = useMemo(
     () =>
@@ -45,12 +48,41 @@ export default function FeedbackPage() {
     [],
   )
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
+    console.log('[Feedback] onSubmit fired')
     e.preventDefault()
+    setSubmitState('idle')
+    setSubmitError('')
+    setDebugResult(null)
+
     const next = validateFeedback(form)
     setErrors(next)
-    if (Object.keys(next).length > 0) return
-    setSubmitted(true)
+    if (Object.keys(next).length > 0) {
+      console.log('[Feedback] validation blocked submit', next)
+      return
+    }
+
+    setSubmitState('loading')
+    try {
+      const payload = {
+        fullName: form.fullName.trim(),
+        phoneNumber: form.phone.trim(),
+        email: form.email.trim(),
+        message: form.message.trim(),
+      }
+      console.log('[Feedback] sending payload', payload)
+
+      const res = await submitFeedback(payload)
+      setDebugResult(res ? JSON.stringify(res) : null)
+
+      setSubmitted(true)
+      setSubmitState('idle')
+    } catch (err) {
+      setSubmitState('error')
+      const msg = err instanceof Error ? err.message : 'Unable to send feedback. Please try again.'
+      setSubmitError(msg)
+      console.error('[Feedback] submit failed', err)
+    }
   }
 
   return (
@@ -103,7 +135,6 @@ export default function FeedbackPage() {
                 <FormField
                   id="feedback-showName"
                   label="Show Name"
-                  required
                   value={form.showName}
                   onChange={(v) => setForm((s) => ({ ...s, showName: v }))}
                   error={errors.showName}
@@ -112,7 +143,6 @@ export default function FeedbackPage() {
                 <FormField
                   id="feedback-showVenue"
                   label="Show Venue"
-                  required
                   value={form.showVenue}
                   onChange={(v) => setForm((s) => ({ ...s, showVenue: v }))}
                   error={errors.showVenue}
@@ -131,11 +161,28 @@ export default function FeedbackPage() {
                 placeholder="What did you feel? What should we keep, change, or explore next?"
               />
 
+              {submitState === 'error' ? (
+                <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-100">
+                  {submitError || 'Unable to send feedback right now. Please refresh and try again.'}
+                </div>
+              ) : null}
+
               <div className="pt-1">
-                <button type="submit" className="btn-primary w-full">
-                  Submit Feedback
+                <button
+                  type="submit"
+                  className="btn-primary w-full"
+                  disabled={submitState === 'loading'}
+                  onClick={() => console.log('[Feedback] submit button clicked')}
+                >
+                  {submitState === 'loading' ? 'Submitting…' : 'Submit Feedback'}
                 </button>
               </div>
+
+              {debugResult ? (
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-white/70 break-all">
+                  {debugResult}
+                </div>
+              ) : null}
             </form>
           )}
         </GlassPanel>

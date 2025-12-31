@@ -27,12 +27,14 @@ export type IssueTicketResponse = {
   message?: string
 }
 
-export async function issueTicket(payload: IssueTicketRequest): Promise<IssueTicketResponse> {
+export function getApiBaseUrl() {
   const base = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
-  const basePrefix = base.trim().length ? base : ''
+  return base.trim()
+}
 
-  const path = siteContent.bookingPage.form.submit.apiEndpoint || '/api/tickets/issue'
-  const url = `${basePrefix}${path}`
+export async function postJson<TResponse>(path: string, body: unknown): Promise<TResponse> {
+  const base = getApiBaseUrl()
+  const url = base ? `${base}${path}` : path
 
   const res = await fetch(url, {
     method: 'POST',
@@ -40,15 +42,31 @@ export async function issueTicket(payload: IssueTicketRequest): Promise<IssueTic
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   })
 
+  const text = await res.text().catch(() => '')
+
   if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(text || `Request failed with status ${res.status}`)
+    // Prefer JSON message when available
+    try {
+      const parsed = text ? JSON.parse(text) : null
+      const msg = parsed?.message ?? text
+      throw new Error(msg || `Request failed (${res.status})`)
+    } catch {
+      throw new Error(text || `Request failed (${res.status})`)
+    }
   }
 
-  const data = (await res.json().catch(() => null)) as IssueTicketResponse | null
+  // If server returns empty body, return empty object
+  return (text ? (JSON.parse(text) as TResponse) : ({} as TResponse))
+}
+
+export async function issueTicket(payload: IssueTicketRequest): Promise<IssueTicketResponse> {
+  const path = siteContent.bookingPage.form.submit.apiEndpoint || '/api/tickets/issue'
+
+  const data = await postJson<IssueTicketResponse>(path, payload)
+
   if (!data?.ticketId) {
     return { ticketId: `TKT-${Date.now().toString(36).toUpperCase()}` }
   }

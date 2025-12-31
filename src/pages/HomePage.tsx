@@ -99,7 +99,7 @@ function BackgroundSlideshow() {
         key={`current-${currentSrc}-${currentIdx}`}
         src={currentSrc}
         alt="Previous play background"
-        className={`${baseImgClasses} ${getObjectPosition(currentSrc)} ${nextSrc && transitioning ? 'opacity-0' : 'opacity-50'}`}
+        className={`${baseImgClasses} ${getObjectPosition(currentSrc)} ${nextSrc && transitioning ? 'opacity-0' : 'opacity-40'}`}
         loading="lazy"
         decoding="async"
       />
@@ -108,7 +108,7 @@ function BackgroundSlideshow() {
           key={`next-${nextSrc}-${next}`}
           src={nextSrc}
           alt="Previous play background"
-          className={`${baseImgClasses} ${getObjectPosition(nextSrc)} ${transitioning ? 'opacity-50' : 'opacity-0'}`}
+          className={`${baseImgClasses} ${getObjectPosition(nextSrc)} ${transitioning ? 'opacity-40' : 'opacity-0'}`}
           loading="lazy"
           decoding="async"
         />
