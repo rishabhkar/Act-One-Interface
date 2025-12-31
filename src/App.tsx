@@ -13,6 +13,8 @@ import PreviousShowsPage from './pages/PreviousShowsPage'
 import ShowsPage from './pages/ShowsPage'
 import SupportFeedbackPage from './pages/SupportFeedbackPage'
 import WorkshopsGalleryPage from './pages/WorkshopsGalleryPage'
+import FeedbackPage from './pages/FeedbackPage'
+import SupportUsPage from './pages/SupportUsPage'
 import './App.css'
 
 export default function App() {
@@ -75,7 +77,7 @@ export default function App() {
             path="/support-us"
             element={
               <RouteTransition>
-                <SupportFeedbackPage />
+                <SupportUsPage />
               </RouteTransition>
             }
           />
@@ -83,7 +85,7 @@ export default function App() {
             path="/feedback"
             element={
               <RouteTransition>
-                <SupportFeedbackPage />
+                <FeedbackPage />
               </RouteTransition>
             }
           />
@@ -108,6 +110,14 @@ export default function App() {
             element={
               <RouteTransition>
                 <MembersPage />
+              </RouteTransition>
+            }
+          />
+          <Route
+            path="/support-feedback"
+            element={
+              <RouteTransition>
+                <SupportFeedbackPage />
               </RouteTransition>
             }
           />

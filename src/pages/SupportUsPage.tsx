@@ -4,12 +4,14 @@ import SectionReveal from '../components/SectionReveal'
 import FormField from '../components/FormField'
 
 import qrWhite from '../data/payments/QR Code White.webp'
+import { submitDonation } from '../lib/donations'
 
 type SupportForm = {
   fullName: string
   email: string
   phone: string
   message: string
+  amount: string
 }
 
 function validateSupport(form: SupportForm) {
@@ -19,6 +21,11 @@ function validateSupport(form: SupportForm) {
   else if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) errors.email = 'Enter a valid email.'
   if (!form.phone.trim()) errors.phone = 'Phone Number is required.'
   if (!form.message.trim()) errors.message = 'Message is required.'
+
+  const amount = Number(form.amount)
+  if (!form.amount.trim()) errors.amount = 'Donation amount is required.'
+  else if (!Number.isFinite(amount) || amount <= 0) errors.amount = 'Enter a valid amount.'
+
   return errors
 }
 
@@ -28,9 +35,13 @@ export default function SupportUsPage() {
     email: '',
     phone: '',
     message: '',
+    amount: '',
   })
   const [errors, setErrors] = useState<Partial<Record<keyof SupportForm, string>>>({})
   const [submitted, setSubmitted] = useState(false)
+  const [submitState, setSubmitState] = useState<'idle' | 'loading' | 'error'>('idle')
+  const [submitError, setSubmitError] = useState('')
+  const [debugResult, setDebugResult] = useState<string | null>(null)
 
   const panelStyle = useMemo(
     () =>
@@ -41,14 +52,42 @@ export default function SupportUsPage() {
     [],
   )
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
+    console.log('[Donation] onSubmit fired')
     e.preventDefault()
+    setSubmitState('idle')
+    setSubmitError('')
+    setDebugResult(null)
+
     const next = validateSupport(form)
     setErrors(next)
-    if (Object.keys(next).length > 0) return
+    if (Object.keys(next).length > 0) {
+      console.log('[Donation] validation blocked submit', next)
+      return
+    }
 
-    // No backend wired yet – just show a success state.
-    setSubmitted(true)
+    setSubmitState('loading')
+    try {
+      const payload = {
+        fullName: form.fullName.trim(),
+        phoneNumber: form.phone.trim(),
+        email: form.email.trim(),
+        message: form.message.trim(),
+        amount: Number(form.amount),
+      }
+      console.log('[Donation] sending payload', payload)
+
+      const res = await submitDonation(payload)
+      setDebugResult(res ? JSON.stringify(res) : null)
+
+      setSubmitted(true)
+      setSubmitState('idle')
+    } catch (err) {
+      setSubmitState('error')
+      const msg = err instanceof Error ? err.message : 'Unable to send your donation details. Please try again.'
+      setSubmitError(msg)
+      console.error('[Donation] submit failed', err)
+    }
   }
 
   return (
@@ -134,6 +173,17 @@ export default function SupportUsPage() {
                 />
 
                 <FormField
+                  id="support-amount"
+                  label="Donation Amount (INR)"
+                  required
+                  type="number"
+                  value={form.amount}
+                  onChange={(v) => setForm((s) => ({ ...s, amount: v }))}
+                  error={errors.amount}
+                  placeholder="e.g. 50"
+                />
+
+                <FormField
                   id="support-message"
                   label="Message"
                   required
@@ -141,14 +191,31 @@ export default function SupportUsPage() {
                   value={form.message}
                   onChange={(v) => setForm((s) => ({ ...s, message: v }))}
                   error={errors.message}
-                  placeholder="Tell us about your donation or leave a note for the troupe…"
+                  placeholder="Keep up the great work"
                 />
 
+                {submitState === 'error' ? (
+                  <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-100">
+                    {submitError || 'Unable to submit right now. Please try again.'}
+                  </div>
+                ) : null}
+
                 <div className="pt-1">
-                  <button type="submit" className="btn-primary w-full">
-                    Submit
+                  <button
+                    type="submit"
+                    className="btn-primary w-full"
+                    disabled={submitState === 'loading'}
+                    onClick={() => console.log('[Donation] submit button clicked')}
+                  >
+                    {submitState === 'loading' ? 'Submitting…' : 'Submit'}
                   </button>
                 </div>
+
+                {debugResult ? (
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-white/70 break-all">
+                    {debugResult}
+                  </div>
+                ) : null}
               </form>
             )}
           </GlassPanel>

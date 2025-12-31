@@ -15,32 +15,32 @@ type BgItem = {
 
 const DEFAULT_BG: BgItem[] = [
   {
-    src: '/media/bg/01.webp',
+    src: new URL('../data/images/gallery/background/background-01.webp', import.meta.url).toString(),
     alt: 'Stage background 01',
     theme: { a: 'rgba(255,106,26,0.62)', b: 'rgba(45,92,255,0.54)', a2: 'rgba(255,150,90,0.22)' },
   },
   {
-    src: '/media/bg/02.webp',
+    src: new URL('../data/images/gallery/background/background-02.webp', import.meta.url).toString(),
     alt: 'Stage background 02',
     theme: { a: 'rgba(255,142,69,0.58)', b: 'rgba(80,140,255,0.52)', b2: 'rgba(25,70,255,0.18)' },
   },
   {
-    src: '/media/bg/03.webp',
+    src: new URL('../data/images/gallery/background/background-03.webp', import.meta.url).toString(),
     alt: 'Stage background 03',
     theme: { a: 'rgba(255,110,55,0.56)', b: 'rgba(60,110,255,0.58)' },
   },
   {
-    src: '/media/bg/04.webp',
+    src: new URL('../data/images/gallery/background/background-04.webp', import.meta.url).toString(),
     alt: 'Stage background 04',
     theme: { a: 'rgba(255,106,26,0.58)', b: 'rgba(45,92,255,0.62)' },
   },
   {
-    src: '/media/bg/05.webp',
+    src: new URL('../data/images/gallery/background/background-05.webp', import.meta.url).toString(),
     alt: 'Stage background 05',
     theme: { a: 'rgba(255,130,60,0.74)', b: 'rgba(48,96,255,0.45)', a2: 'rgba(255,170,120,0.18)' },
   },
   {
-    src: '/media/bg/06.webp',
+    src: new URL('../data/images/gallery/background/background-06.webp', import.meta.url).toString(),
     alt: 'Stage background 06',
     theme: { a: 'rgba(255,95,40,0.62)', b: 'rgba(55,105,255,0.56)' },
   },
@@ -95,6 +95,9 @@ export default function BackgroundLayers() {
   const location = useLocation()
   const pageBg = useNoCollisionBackground(location.pathname, { excludeHome: true })
 
+  // Home page uses its own previousPlays slideshow background (HomePage.tsx).
+  const isHome = location.pathname === '/'
+
   const items = useMemo(() => DEFAULT_BG, [])
   const [index, setIndex] = useState(0)
   const [fade, setFade] = useState<0 | 1>(0)
@@ -105,22 +108,26 @@ export default function BackgroundLayers() {
   const reducedMotion = usePrefersReducedMotion()
   const lowVisualPriority = useLowVisualPriority()
 
-  // If we're using per-page backgrounds (all pages except home), skip cycling DEFAULT_BG.
-  const usePerPageBackground = !!pageBg
+  // Use per-page background for all routes except home.
+  const usePerPageBackground = !isHome && !!pageBg
 
   // Crossfade between per-page backgrounds on route change.
   useEffect(() => {
     if (!usePerPageBackground) {
-      setPageBgCurrent(null)
-      setPageBgNext(null)
-      setPageBgFade(false)
+      queueMicrotask(() => {
+        setPageBgCurrent(null)
+        setPageBgNext(null)
+        setPageBgFade(false)
+      })
       return
     }
     if (!pageBg) return
 
     if (pageBgCurrent === pageBg) return
-    setPageBgNext(pageBg)
-    setPageBgFade(true)
+    queueMicrotask(() => {
+      setPageBgNext(pageBg)
+      setPageBgFade(true)
+    })
 
     if (fadeTimeout.current) window.clearTimeout(fadeTimeout.current)
     fadeTimeout.current = window.setTimeout(() => {
@@ -134,8 +141,9 @@ export default function BackgroundLayers() {
     }
   }, [pageBg, usePerPageBackground, pageBgCurrent])
 
-  // Crossfade state machine: fade to next, swap index, fade back in.
+  // Disable DEFAULT_BG cycling on home (home has its own slideshow).
   useEffect(() => {
+    if (isHome) return
     if (usePerPageBackground) return
     if (reducedMotion || lowVisualPriority) return
 
@@ -157,7 +165,7 @@ export default function BackgroundLayers() {
       cancelled = true
       window.clearInterval(id)
     }
-  }, [items.length, reducedMotion, lowVisualPriority, usePerPageBackground])
+  }, [isHome, items.length, reducedMotion, lowVisualPriority, usePerPageBackground])
 
   const active = items[index]
   const next = items[(index + 1) % items.length]
@@ -215,9 +223,6 @@ export default function BackgroundLayers() {
                   loading={lowVisualPriority ? 'eager' : 'eager'}
                   className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${pageBgFade ? 'opacity-0' : 'opacity-100'}`}
                   decoding="async"
-                  onError={(e) => {
-                    ;(e.currentTarget as HTMLImageElement).classList.add('img-error')
-                  }}
                 />
               ) : null}
               {pageBgNext ? (
@@ -228,24 +233,18 @@ export default function BackgroundLayers() {
                   loading={lowVisualPriority ? 'eager' : 'eager'}
                   className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${pageBgFade ? 'opacity-100' : 'opacity-0'}`}
                   decoding="async"
-                  onError={(e) => {
-                    ;(e.currentTarget as HTMLImageElement).classList.add('img-error')
-                  }}
                 />
               ) : null}
             </>
-          ) : (
+          ) : !isHome ? (
             <img
               src={active.src}
               alt={active.alt}
               loading={lowVisualPriority ? 'eager' : 'eager'}
               className={'h-full w-full object-cover ' + (lowVisualPriority ? '' : 'will-change-transform motion-safe:animate-drift')}
               decoding="async"
-              onError={(e) => {
-                ;(e.currentTarget as HTMLImageElement).classList.add('img-error')
-              }}
             />
-          )}
+          ) : null}
         </div>
       </div>
 

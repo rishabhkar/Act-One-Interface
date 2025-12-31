@@ -1,49 +1,73 @@
 import { siteContent } from '../content/siteContent'
 
 export type IssueTicketRequest = {
-  showName?: string | null
+  showId: string
+  auditoriumId: string
+  showName: string
   fullName: string
   email: string
+  ticketCount: number
+  ticketAmount: number
   phoneNumber: string
-  ticketCount?: number | null
-  transactionID: string
+  transactionId: string
 }
 
 export type IssueTicketResponse = {
   ticketId: string
   status?: string
-  barcodeId?: string
+  qrCodeId?: string
   showId?: string
   showName?: string
+  auditoriumId?: string
   ticketCount?: number
+  userId?: string
+  transactionId?: string
   ticketIds?: string[]
-  barcodeIds?: string[]
+  qrCodeIds?: string[]
+  message?: string
 }
 
-export async function issueTicket(payload: IssueTicketRequest): Promise<IssueTicketResponse> {
-  // Default to local backend for now; can be overridden later via env.
-  const base = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:8080'
+export function getApiBaseUrl() {
+  const base = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
+  return base.trim()
+}
 
-  const path = siteContent.bookingPage.form.submit.apiEndpoint || '/api/tickets/issue'
-  const url = `${base}${path}`
+export async function postJson<TResponse>(path: string, body: unknown): Promise<TResponse> {
+  const base = getApiBaseUrl()
+  const url = base ? `${base}${path}` : path
 
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Accept: 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   })
 
+  const text = await res.text().catch(() => '')
+
   if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(text || `Request failed with status ${res.status}`)
+    // Prefer JSON message when available
+    try {
+      const parsed = text ? JSON.parse(text) : null
+      const msg = parsed?.message ?? text
+      throw new Error(msg || `Request failed (${res.status})`)
+    } catch {
+      throw new Error(text || `Request failed (${res.status})`)
+    }
   }
 
-  const data = (await res.json().catch(() => null)) as IssueTicketResponse | null
+  // If server returns empty body, return empty object
+  return (text ? (JSON.parse(text) as TResponse) : ({} as TResponse))
+}
+
+export async function issueTicket(payload: IssueTicketRequest): Promise<IssueTicketResponse> {
+  const path = siteContent.bookingPage.form.submit.apiEndpoint || '/api/tickets/issue'
+
+  const data = await postJson<IssueTicketResponse>(path, payload)
+
   if (!data?.ticketId) {
-    // Some placeholder APIs might not return expected JSON.
-    // Generate a deterministic-ish fallback ID so UI still works.
     return { ticketId: `TKT-${Date.now().toString(36).toUpperCase()}` }
   }
 

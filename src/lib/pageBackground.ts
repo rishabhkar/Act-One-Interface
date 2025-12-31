@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 
 const backgroundImages = Object.values(
-  import.meta.glob('../data/images/gallery/background/*.{webp}', {
-    eager: true,
-    import: 'default',
-  }),
+    import.meta.glob('../data/images/gallery/background/*.{webp}', {
+      eager: true,
+      import: 'default',
+    }),
 ) as string[]
 
 function mulberry32(seed: number) {
