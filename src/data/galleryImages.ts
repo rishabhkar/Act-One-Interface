@@ -51,6 +51,8 @@ export const playGallerySections: PlayGallerySection[] = [
   {
     id: 'chup-adalat-cholche',
     title: 'Chup Adalat Cholche',
+    synopsis:
+      'Vijay Tendulkar’s Shantata! Court Chalu Aahe (Silence! The Court Is in Session), written in 1963 and first performed in 1967, stands as a landmark work in Indian theatre. Through its unsettling courtroom-within-a-play structure, it delivers a sharp and unflinching critique of a deeply patriarchal society. At its core is the tragic ordeal of Benare, a woman subjected to moral scrutiny and public humiliation by those she considers her peers. The play powerfully exposes how societal discrimination often disguises itself as harmless play or collective ritual, sanctioned and normalized by the group. Benare’s personal tragedy is not an isolated incident but a reflection of a much larger reality—the enduring struggle of Indian women for dignity, autonomy, and the right to define their own lives in the face of social hypocrisy and judgment.',
     images: Array.from({ length: 7 }, (_, i) => {
       const n = String(i + 1).padStart(2, '0')
       return {
@@ -66,6 +68,8 @@ export const playGallerySections: PlayGallerySection[] = [
   {
     id: 'daag',
     title: 'Daag',
+    synopsis:
+      'The play is rooted in a teacher’s struggle against politically motivated industrialization in rural India—an ongoing and deeply contentious issue. It highlights how local communities are often forced to confront state-backed corporate projects that prioritize profit and political interests over people. These developments threaten not only the environment but also the livelihoods, culture, and social fabric of rural populations, turning the teacher’s fight into a powerful symbol of grassroots resistance and moral courage.',
     images: Array.from({ length: 10 }, (_, i) => {
       const n = String(i + 1).padStart(2, '0')
       return {
@@ -134,6 +138,8 @@ export const playGallerySections: PlayGallerySection[] = [
   {
     id: 'shades-of-women',
     title: 'Shades of Women',
+    synopsis:
+      'The situation of women in India is marked by a striking contradiction: while a robust legal framework promises equality and protection, deeply entrenched social norms continue to perpetuate discrimination and injustice. Yet history—both past and present—bears witness to the resilience, courage, and resistance of women who have refused to remain silent. Individually and collectively, women have continuously challenged oppression, reclaiming their voices and agency in powerful ways. Shades of Women, a non-verbal short play, brings these realities to the stage by portraying the journeys of three brave women, each reflecting a different shade of struggle, strength, and defiance against societal constraints.',
     images: Array.from({ length: 6 }, (_, i) => {
       const n = String(i + 1).padStart(2, '0')
       return {
