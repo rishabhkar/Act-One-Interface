@@ -166,8 +166,8 @@ function HeroLogo() {
   return (
     <div className="mx-auto flex w-full max-w-[360px] flex-col items-center">
       <div className="relative w-full">
-        {/* Larger-radius glow behind the logo (animation removed for performance) */}
-        <div className="absolute inset-0 -z-10 rounded-[32px] blur-3xl bg-[radial-gradient(circle_at_center,rgba(255,138,76,0.65)_0%,rgba(255,138,76,0.28)_45%,transparent_90%)]" />
+        {/* Larger-radius glow behind the logo */}
+        <div className="absolute inset-0 -z-10 rounded-[32px] blur-3xl bg-[radial-gradient(circle_at_center,rgba(255,138,76,0.58)_0%,rgba(255,106,26,0.30)_38%,rgba(255,140,60,0.18)_58%,transparent_90%)] animate-logo-glow" />
 
         {/* Animated logo (GIF) */}
         <img
@@ -210,7 +210,7 @@ export default function HomePage() {
               <div className="relative inline-block">
                 <span
                   aria-hidden="true"
-                  className="absolute inset-[-8%] -z-10 rounded-full blur-3xl bg-[radial-gradient(circle_at_35%_45%,rgba(255,255,255,0.22),rgba(0,8,32,0))]"
+                  className="absolute inset-[-10%] -z-10 rounded-full blur-3xl bg-[radial-gradient(circle_at_35%_45%,rgba(255,255,255,0.30),rgba(255,140,60,0.18),rgba(0,8,32,0))]"
                 />
                 <h1 className="mt-3 font-serif text-white leading-tight">
                   <span className="block uppercase tracking-[0.18em] heading-hero">{heroTitle}</span>
@@ -221,6 +221,10 @@ export default function HomePage() {
                   ) : null}
                 </h1>
               </div>
+
+              <p className="mt-4 max-w-prose text-sm leading-relaxed text-white/70 whitespace-pre-line text-justify">
+                {'Socio Cultural Activity Group and Public Charitable Trust\nESTD.: 2021, Registration No. 499\nRegistered with NGO Darpan (Niti Ayog) Registration no. DL/2024/ 0395217'}
+              </p>
 
               <p className="mt-5 max-w-prose text-base leading-relaxed text-white/75 whitespace-pre-line text-justify">
                 {hero.subcopy}

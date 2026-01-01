@@ -160,7 +160,7 @@ export default function BackgroundLayers() {
       }, 1200)
     }
 
-    const id = window.setInterval(run, 12000)
+    const id = window.setInterval(run, 15000)
     return () => {
       cancelled = true
       window.clearInterval(id)
@@ -221,7 +221,7 @@ export default function BackgroundLayers() {
                   src={pageBgCurrent}
                   alt="Page background"
                   loading={lowVisualPriority ? 'eager' : 'eager'}
-                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${pageBgFade ? 'opacity-0' : 'opacity-100'}`}
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1200ms] ${pageBgFade ? 'opacity-0' : 'opacity-100'}`}
                   decoding="async"
                 />
               ) : null}
@@ -231,19 +231,37 @@ export default function BackgroundLayers() {
                   src={pageBgNext}
                   alt="Page background"
                   loading={lowVisualPriority ? 'eager' : 'eager'}
-                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${pageBgFade ? 'opacity-100' : 'opacity-0'}`}
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1200ms] ${pageBgFade ? 'opacity-100' : 'opacity-0'}`}
                   decoding="async"
                 />
               ) : null}
             </>
           ) : !isHome ? (
-            <img
-              src={active.src}
-              alt={active.alt}
-              loading={lowVisualPriority ? 'eager' : 'eager'}
-              className={'h-full w-full object-cover ' + (lowVisualPriority ? '' : 'will-change-transform motion-safe:animate-drift')}
-              decoding="async"
-            />
+            <>
+              {/* Cross-fade between the rotating DEFAULT_BG images */}
+              <img
+                key={`bg-active-${active.src}`}
+                src={active.src}
+                alt={active.alt}
+                loading={lowVisualPriority ? 'eager' : 'eager'}
+                className={
+                  'absolute inset-0 h-full w-full object-cover transition-opacity duration-[1200ms] ' +
+                  (fade ? 'opacity-0' : 'opacity-100')
+                }
+                decoding="async"
+              />
+              <img
+                key={`bg-next-${next.src}`}
+                src={next.src}
+                alt={next.alt}
+                loading={lowVisualPriority ? 'eager' : 'eager'}
+                className={
+                  'absolute inset-0 h-full w-full object-cover transition-opacity duration-[1200ms] ' +
+                  (fade ? 'opacity-100' : 'opacity-0')
+                }
+                decoding="async"
+              />
+            </>
           ) : null}
         </div>
       </div>

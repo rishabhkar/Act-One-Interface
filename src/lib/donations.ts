@@ -6,6 +6,7 @@ export type DonationPayload = {
   email: string
   message: string
   amount: number
+  transactionId: string
 }
 
 export type DonationResponse = {

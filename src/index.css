@@ -73,7 +73,7 @@ body {
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    background: rgba(6, 10, 18, 0.55); /* Increased opaqueness */
+    background: rgba(6, 10, 18, 0.7); /* Increased opaqueness */
     z-index: 1;
     mix-blend-mode: normal;
   }
