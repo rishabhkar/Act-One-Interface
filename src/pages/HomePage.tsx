@@ -22,6 +22,9 @@ const previousPlayImages = Object.values(
 
 function getObjectPosition(src: string) {
   if (src.includes('chup-adalat-cholche-07')) return 'object-bottom'
+  if (src.includes('daag-03')) return 'object-bottom'
+  if (src.includes('the-story-telling-04')) return 'object-center'
+  if (src.includes('daag-07')) return 'object-center'
   if (src.includes('restaurant-03')) return 'object-center'
   return 'object-top'
 }
