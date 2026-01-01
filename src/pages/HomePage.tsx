@@ -2,6 +2,7 @@ import { ArrowRight, ExternalLink, Users } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
+import ResponsiveImage from '../components/ResponsiveImage'
 import SectionReveal from '../components/SectionReveal'
 import ShowGrid from '../components/ShowGrid'
 import { siteContent } from '../content/siteContent'
@@ -11,11 +12,11 @@ import { memberProfiles } from '../data/members'
 const logoVideoUrl = new URL('/media/logo.webm', import.meta.url).toString()
 const logoPngUrl = new URL('/media/logo.webp', import.meta.url).toString()
 
-// gather gallery images from previousPlays for background slideshow
+// Home background slideshow images (URLs baked by Vite at build time).
 const previousPlayImages = Object.values(
-  import.meta.glob('../data/images/gallery/previousPlays/**/*.{webp}', {
+  import.meta.glob('../data/images/gallery/previousPlays/**/*.webp', {
     eager: true,
-    import: 'default',
+    as: 'url',
   }),
 ) as string[]
 
@@ -27,6 +28,10 @@ function getObjectPosition(src: string) {
 
 function BackgroundSlideshow() {
   const images = useMemo(() => previousPlayImages, [])
+  const reducedMotion = useMemo(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return false
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }, [])
   const makeOrder = (len: number) => {
     const arr = Array.from({ length: len }, (_, i) => i)
     for (let i = arr.length - 1; i > 0; i--) {
@@ -43,6 +48,14 @@ function BackgroundSlideshow() {
   const orderRef = useRef(order)
   const posRef = useRef(pos)
 
+  // Preload helper to avoid sudden image appearance.
+  const preload = (src: string | null) => {
+    if (!src) return
+    const img = new Image()
+    img.decoding = 'async'
+    img.src = src
+  }
+
   useEffect(() => {
     orderRef.current = order
   }, [order])
@@ -53,6 +66,7 @@ function BackgroundSlideshow() {
 
   useEffect(() => {
     if (!images.length) return
+    if (reducedMotion) return
     let timeoutId: ReturnType<typeof setTimeout> | null = null
     const tick = () => {
       const currPos = posRef.current
@@ -62,6 +76,7 @@ function BackgroundSlideshow() {
       const nextPos = (currPos + 1) % currOrder.length
       const nextIdx = currOrder[nextPos]
       if (nextIdx === currIdx && images.length > 1) return
+      preload(images[nextIdx] ?? null)
       setNext(nextIdx)
       requestAnimationFrame(() => setTransitioning(true))
       timeoutId = setTimeout(() => {
@@ -78,12 +93,13 @@ function BackgroundSlideshow() {
         setTransitioning(false)
       }, 1200)
     }
-    const intervalId = setInterval(tick, 5000)
+    // Slightly slower cadence reduces CPU/GPU churn.
+    const intervalId = setInterval(tick, 7000)
     return () => {
       clearInterval(intervalId)
       if (timeoutId) clearTimeout(timeoutId)
     }
-  }, [images.length])
+  }, [images, images.length, reducedMotion])
 
   if (!images.length) return null
 
@@ -92,25 +108,30 @@ function BackgroundSlideshow() {
   const nextSrc = next !== null ? images[next] : null
 
   const baseImgClasses = 'absolute inset-0 h-full w-full object-cover transition-opacity duration-[2000ms] ease-in-out'
+  const sizes = '100vw'
 
   return (
     <div className="fixed inset-x-0 top-0 bottom-0 -z-10 overflow-hidden pointer-events-none">
-      <img
+      <ResponsiveImage
         key={`current-${currentSrc}-${currentIdx}`}
         src={currentSrc}
         alt="Previous play background"
-        className={`${baseImgClasses} ${getObjectPosition(currentSrc)} ${nextSrc && transitioning ? 'opacity-0' : 'opacity-40'}`}
-        loading="lazy"
+        className={`${baseImgClasses} ${getObjectPosition(currentSrc)} ${nextSrc && transitioning ? 'opacity-0' : 'opacity-70'}`}
+        loading="eager"
         decoding="async"
+        fetchPriority="low"
+        sizes={sizes}
       />
       {nextSrc ? (
-        <img
+        <ResponsiveImage
           key={`next-${nextSrc}-${next}`}
           src={nextSrc}
           alt="Previous play background"
-          className={`${baseImgClasses} ${getObjectPosition(nextSrc)} ${transitioning ? 'opacity-40' : 'opacity-0'}`}
-          loading="lazy"
+          className={`${baseImgClasses} ${getObjectPosition(nextSrc)} ${transitioning ? 'opacity-70' : 'opacity-0'}`}
+          loading="eager"
           decoding="async"
+          fetchPriority="low"
+          sizes={sizes}
         />
       ) : null}
     </div>

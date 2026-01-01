@@ -1,37 +1,14 @@
 import { Link } from 'react-router-dom'
-import { useMemo, useRef, useState, useEffect } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { playGallerySections } from '../data/galleryImages'
-import { useGlassGradientFromImg } from '../lib/useGlassGradientFromImg'
 
 function clampIndex(i: number, len: number) {
   if (len <= 0) return 0
   const mod = i % len
   return mod < 0 ? mod + len : mod
-}
-
-function useInView<T extends Element>(rootMargin = '0px') {
-  const ref = useRef<T | null>(null)
-  const [inView, setInView] = useState(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) setInView(true)
-        })
-      },
-      { root: null, rootMargin, threshold: 0.1 },
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [rootMargin])
-
-  return { ref, inView }
 }
 
 function PlayGallerySection({
@@ -49,26 +26,11 @@ function PlayGallerySection({
   const active = images.length ? images[clampIndex(index, images.length)] : null
 
   const activeImgRef = useRef<HTMLImageElement | null>(null)
-  const glassGradient = useGlassGradientFromImg(activeImgRef, { cacheKey: active?.src, enabled: true })
-
-  // Observe section visibility: don't load big images until the section is near viewport.
-  const { ref: sectionRef, inView } = useInView<HTMLDivElement>('200px')
-
-  // Determine whether we should load the active image now.
-  const shouldLoadActive = Boolean(active) && (isFirst || inView)
 
   return (
     <SectionReveal>
-      <div ref={sectionRef}>
-        <GlassPanel
-          className="p-4 sm:p-6 text-justify"
-          labelledBy={`gallery-${title}`}
-          style={
-            glassGradient
-              ? ({ ['--glass-gradient']: glassGradient } as React.CSSProperties)
-              : undefined
-          }
-        >
+      <div>
+        <GlassPanel className="p-4 sm:p-6 text-justify" labelledBy={`gallery-${title}`}>
           <div className="flex flex-col gap-4">
             {/* Title + buttons */}
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -115,10 +77,9 @@ function PlayGallerySection({
             <div className="rounded-2xl border border-white/10 bg-black/30 p-3">
               <div className="flex items-center justify-center">
                 {active ? (
-                  // Only set src when we should load to avoid fetching many large files at once.
                   <img
                     ref={activeImgRef}
-                    src={shouldLoadActive ? active.src : undefined}
+                    src={active.src}
                     alt={active.alt}
                     // Provide explicit intrinsic size to reserve space and avoid layout shifts.
                     width={1600}

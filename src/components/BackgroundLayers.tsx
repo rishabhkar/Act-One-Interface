@@ -195,7 +195,7 @@ export default function BackgroundLayers() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
       {/* Animated haze layers */}
-      {lowVisualPriority ? (
+      {isHome ? null : lowVisualPriority ? (
         <div className="absolute inset-0" style={staticBgStyle} />
       ) : (
         <>
@@ -248,8 +248,8 @@ export default function BackgroundLayers() {
         </div>
       </div>
 
-      {/* Legibility gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/25 to-black/75" />
+      {/* Legibility gradient (not applied on home — HomePage has its own slideshow overlay) */}
+      {!isHome && <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/25 to-black/75" />}
 
       {!lowVisualPriority && <div className="light-sweep" />}
     </div>
