@@ -17,7 +17,7 @@ export default function ShowsPage() {
         </header>
       </SectionReveal>
 
-      <section cclearlassName="mt-8 pb-2">
+      <section className="mt-8 pb-2">
         <ShowGrid />
       </section>
     </div>
