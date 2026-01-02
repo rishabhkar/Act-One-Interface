@@ -1,0 +1,1 @@
+var e=`/assets/QR%20Code%20White-Cu0EgV4P.webp`;export{e as t};

@@ -12,6 +12,7 @@ type SupportForm = {
   phone: string
   message: string
   amount: string
+  transactionId: string
 }
 
 function validateSupport(form: SupportForm) {
@@ -26,6 +27,8 @@ function validateSupport(form: SupportForm) {
   if (!form.amount.trim()) errors.amount = 'Donation amount is required.'
   else if (!Number.isFinite(amount) || amount <= 0) errors.amount = 'Enter a valid amount.'
 
+  if (!form.transactionId.trim()) errors.transactionId = 'Transaction ID is required.'
+
   return errors
 }
 
@@ -36,6 +39,7 @@ export default function SupportUsPage() {
     phone: '',
     message: '',
     amount: '',
+    transactionId: '',
   })
   const [errors, setErrors] = useState<Partial<Record<keyof SupportForm, string>>>({})
   const [submitted, setSubmitted] = useState(false)
@@ -74,6 +78,7 @@ export default function SupportUsPage() {
         email: form.email.trim(),
         message: form.message.trim(),
         amount: Number(form.amount),
+        transactionId: form.transactionId.trim(),
       }
       console.log('[Donation] sending payload', payload)
 
@@ -100,6 +105,9 @@ export default function SupportUsPage() {
             people who carry them. If our work has moved you, consider supporting us so we can keep
             nurturing rehearsal rooms, young artists, and performances that celebrate culture with
             care.
+          </p>
+          <p className="mt-3 w-full max-w-none text-sm text-white/70 text-justify">
+            Donations are accepted via UPI.
           </p>
         </div>
       </SectionReveal>
@@ -192,6 +200,21 @@ export default function SupportUsPage() {
                   onChange={(v) => setForm((s) => ({ ...s, message: v }))}
                   error={errors.message}
                   placeholder="Keep up the great work"
+                />
+
+                <FormField
+                  id="support-transactionId"
+                  label="Transaction ID"
+                  required
+                  value={form.transactionId}
+                  onChange={(v) => setForm((s) => ({ ...s, transactionId: v }))}
+                  error={errors.transactionId}
+                  placeholder="Paste the UPI transaction reference"
+                  rightSlot={
+                    <span className="text-xs text-white/60">
+                      Transaction References are required for government auditing purposes
+                    </span>
+                  }
                 />
 
                 {submitState === 'error' ? (

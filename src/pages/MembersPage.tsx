@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
-import { memberProfiles } from '../data/members'
+import { memberProfiles, guestActorProfiles } from '../data/members'
 import { useGlassGradientFromImg } from '../lib/useGlassGradientFromImg'
 
 function MemberCard({
@@ -10,7 +10,6 @@ function MemberCard({
   name,
   profession,
   photoSrc,
-  associationText,
   theatreJourney,
   backstageExperience,
   contributions,
@@ -19,7 +18,6 @@ function MemberCard({
   name: string
   profession?: string
   photoSrc: string
-  associationText?: string
   theatreJourney?: string[]
   backstageExperience?: string[]
   contributions?: string[]
@@ -53,7 +51,6 @@ function MemberCard({
                   {name}
                 </h2>
                 {profession && <div className="mt-1 text-sm text-white/75">{profession}</div>}
-                {associationText && <div className="mt-2 text-sm text-white/70">{associationText}</div>}
               </div>
 
               {(theatreJourney?.length || backstageExperience?.length) && (
@@ -62,9 +59,11 @@ function MemberCard({
                     <>
                       <div className="text-xs uppercase tracking-wide text-white/55">Theatre Journey</div>
                       <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-white/80">
-                        {theatreJourney.map((t) => (
-                          <li key={t}>{t}</li>
-                        ))}
+                        {theatreJourney
+                          .flatMap((t) => t.split(/\r?\n/).map((s) => s.trim()).filter(Boolean))
+                          .map((t) => (
+                            <li key={t}>{t}</li>
+                          ))}
                       </ul>
                     </>
                   ) : null}
@@ -99,8 +98,8 @@ function MemberCard({
 }
 
 export default function MembersPage() {
-  // Keep ordering as defined in data: Rabi at top, then A→Z.
   const members = useMemo(() => memberProfiles, [])
+  const guestActors = useMemo(() => guestActorProfiles, [])
   const location = useLocation()
 
   useEffect(() => {
@@ -153,6 +152,23 @@ export default function MembersPage() {
       <section className="mt-8 pb-6">
         <div className="grid gap-6">
           {members.map((m) => (
+            <MemberCard key={m.id} {...m} />
+          ))}
+        </div>
+      </section>
+
+      <SectionReveal>
+        <header className="pt-6">
+          <h2 className="font-serif text-3xl text-white md:text-4xl">Guest Actors</h2>
+          <p className="mt-3 max-w-prose text-white/70 text-justify">
+            Artists who have collaborated with Prarambh across productions.
+          </p>
+        </header>
+      </SectionReveal>
+
+      <section className="mt-6 pb-10">
+        <div className="grid gap-6">
+          {guestActors.map((m) => (
             <MemberCard key={m.id} {...m} />
           ))}
         </div>

@@ -1,0 +1,18 @@
+@keyframes logoGlowPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(1);
+    filter: blur(48px) saturate(110%);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.03);
+    filter: blur(54px) saturate(140%);
+  }
+}
+
+.animate-logo-glow {
+  animation: logoGlowPulse 6.5s ease-in-out infinite;
+  will-change: transform, opacity, filter;
+}

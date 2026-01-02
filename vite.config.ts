@@ -18,6 +18,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'build',
-    emptyOutDir: true,
+    // OneDrive/Windows can lock files in outDir causing sporadic EPERM/ENOTEMPTY on cleanup.
+    // We keep stale assets harmlessly content-hashed; clean manually when needed.
+    emptyOutDir: false,
   },
 })
