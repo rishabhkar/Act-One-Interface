@@ -73,7 +73,7 @@ body {
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    background: rgba(6, 10, 18, 0.7); /* Increased opaqueness */
+    background: rgba(6, 10, 18, 0.78); /* More opaque for readability */
     z-index: 1;
     mix-blend-mode: normal;
   }
@@ -217,17 +217,6 @@ body {
       repeating-radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.00) 2px),
       repeating-radial-gradient(circle at 80% 35%, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.00) 2px);
     filter: blur(0.2px);
-  }
-
-  /* Prevent browser 'broken image' icons from showing.
-     If an <img> fails to load, hide it so the UI doesn't show broken placeholders. */
-  img:not([src]),
-  img[src=""],
-  img[alt=""]:not([srcset]) {
-    display: none;
-  }
-  img[aria-hidden="true"] {
-    display: none;
   }
 
   /* Optional: hide images that error via a CSS class. */
@@ -409,5 +398,12 @@ body {
       animation: none !important;
       transform: none !important;
     }
+  }
+
+  /* Stronger text shadow for readability on Home (kept as an opt-in class). */
+  .text-home-shadow {
+    text-shadow:
+      0 2px 10px rgba(0, 0, 0, 0.72),
+      0 10px 36px rgba(0, 0, 0, 0.55);
   }
 }

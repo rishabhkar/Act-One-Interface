@@ -1,21 +1,35 @@
 import { AnimatePresence } from 'framer-motion'
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
 import RouteTransition from './components/RouteTransition'
-import BookingPage from './pages/BookingPage'
-import BackstageGalleryPage from './pages/BackstageGalleryPage'
-import ContactPage from './pages/ContactPage'
-import GalleryPage from './pages/GalleryPage'
 import HomePage from './pages/HomePage'
-import MembersPage from './pages/MembersPage'
-import NotFoundPage from './pages/NotFoundPage'
-import PreviousShowsPage from './pages/PreviousShowsPage'
-import ShowsPage from './pages/ShowsPage'
-import SupportFeedbackPage from './pages/SupportFeedbackPage'
-import WorkshopsGalleryPage from './pages/WorkshopsGalleryPage'
-import FeedbackPage from './pages/FeedbackPage'
-import SupportUsPage from './pages/SupportUsPage'
 import './App.css'
+
+const BookingPage = lazy(() => import('./pages/BookingPage'))
+const BackstageGalleryPage = lazy(() => import('./pages/BackstageGalleryPage'))
+const ContactPage = lazy(() => import('./pages/ContactPage'))
+const GalleryPage = lazy(() => import('./pages/GalleryPage'))
+const MembersPage = lazy(() => import('./pages/MembersPage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
+const PreviousShowsPage = lazy(() => import('./pages/PreviousShowsPage'))
+const ShowsPage = lazy(() => import('./pages/ShowsPage'))
+const SupportFeedbackPage = lazy(() => import('./pages/SupportFeedbackPage'))
+const WorkshopsGalleryPage = lazy(() => import('./pages/WorkshopsGalleryPage'))
+const FeedbackPage = lazy(() => import('./pages/FeedbackPage'))
+const SupportUsPage = lazy(() => import('./pages/SupportUsPage'))
+
+function PageFallback() {
+  return <div className="mx-auto max-w-6xl px-4 pt-10 text-sm text-white/70">Loading…</div>
+}
+
+function WrapRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <RouteTransition>
+      <Suspense fallback={<PageFallback />}>{children}</Suspense>
+    </RouteTransition>
+  )
+}
 
 export default function App() {
   const location = useLocation()
@@ -24,111 +38,21 @@ export default function App() {
     <Layout>
       <AnimatePresence mode="wait">
         <Routes location={location}>
-          <Route
-            path="/"
-            element={
-              <RouteTransition>
-                <HomePage />
-              </RouteTransition>
-            }
-          />
+          <Route path="/" element={<RouteTransition><HomePage /></RouteTransition>} />
           <Route path="/home" element={<Navigate to="/" replace />} />
-          <Route
-            path="/shows"
-            element={
-              <RouteTransition>
-                <ShowsPage />
-              </RouteTransition>
-            }
-          />
-          <Route
-            path="/book"
-            element={
-              <RouteTransition>
-                <BookingPage />
-              </RouteTransition>
-            }
-          />
-          <Route
-            path="/gallery"
-            element={
-              <RouteTransition>
-                <GalleryPage />
-              </RouteTransition>
-            }
-          />
-          <Route
-            path="/gallery/backstage"
-            element={
-              <RouteTransition>
-                <BackstageGalleryPage />
-              </RouteTransition>
-            }
-          />
-          <Route
-            path="/gallery/workshops"
-            element={
-              <RouteTransition>
-                <WorkshopsGalleryPage />
-              </RouteTransition>
-            }
-          />
-          <Route
-            path="/support-us"
-            element={
-              <RouteTransition>
-                <SupportUsPage />
-              </RouteTransition>
-            }
-          />
-          <Route
-            path="/feedback"
-            element={
-              <RouteTransition>
-                <FeedbackPage />
-              </RouteTransition>
-            }
-          />
-          <Route
-            path="/previous-shows"
-            element={
-              <RouteTransition>
-                <PreviousShowsPage />
-              </RouteTransition>
-            }
-          />
-          <Route
-            path="/contact"
-            element={
-              <RouteTransition>
-                <ContactPage />
-              </RouteTransition>
-            }
-          />
-          <Route
-            path="/members"
-            element={
-              <RouteTransition>
-                <MembersPage />
-              </RouteTransition>
-            }
-          />
-          <Route
-            path="/support-feedback"
-            element={
-              <RouteTransition>
-                <SupportFeedbackPage />
-              </RouteTransition>
-            }
-          />
-          <Route
-            path="*"
-            element={
-              <RouteTransition>
-                <NotFoundPage />
-              </RouteTransition>
-            }
-          />
+
+          <Route path="/shows" element={<WrapRoute><ShowsPage /></WrapRoute>} />
+          <Route path="/book" element={<WrapRoute><BookingPage /></WrapRoute>} />
+          <Route path="/gallery" element={<WrapRoute><GalleryPage /></WrapRoute>} />
+          <Route path="/gallery/backstage" element={<WrapRoute><BackstageGalleryPage /></WrapRoute>} />
+          <Route path="/gallery/workshops" element={<WrapRoute><WorkshopsGalleryPage /></WrapRoute>} />
+          <Route path="/support-us" element={<WrapRoute><SupportUsPage /></WrapRoute>} />
+          <Route path="/feedback" element={<WrapRoute><FeedbackPage /></WrapRoute>} />
+          <Route path="/previous-shows" element={<WrapRoute><PreviousShowsPage /></WrapRoute>} />
+          <Route path="/contact" element={<WrapRoute><ContactPage /></WrapRoute>} />
+          <Route path="/members" element={<WrapRoute><MembersPage /></WrapRoute>} />
+          <Route path="/support-feedback" element={<WrapRoute><SupportFeedbackPage /></WrapRoute>} />
+          <Route path="*" element={<WrapRoute><NotFoundPage /></WrapRoute>} />
         </Routes>
       </AnimatePresence>
     </Layout>

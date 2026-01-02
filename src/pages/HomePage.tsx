@@ -1,4 +1,4 @@
-import { ArrowRight, ExternalLink, Users } from 'lucide-react'
+import { ArrowRight, ArrowDownToLine, ExternalLink, Users } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
@@ -9,20 +9,25 @@ import { siteContent } from '../content/siteContent'
 import heroLogoGif from '../data/images/Logo Image.webp'
 import { memberProfiles } from '../data/members'
 
+const brochure2024PdfUrl = new URL('../data/brochures/brochure-2024.pdf', import.meta.url).toString()
 const logoVideoUrl = new URL('/media/logo.webm', import.meta.url).toString()
 const logoPngUrl = new URL('/media/logo.webp', import.meta.url).toString()
 
 // Home background slideshow images (URLs baked by Vite at build time).
-const previousPlayImages = Object.values(
+const previousPlayImages = (Object.values(
   import.meta.glob('../data/images/gallery/previousPlays/**/*.webp', {
     eager: true,
     as: 'url',
   }),
-) as string[]
+) as string[]).filter((src) => {
+  // Exclude the specific image the user requested
+  if (!src) return false
+  return !src.includes('shades-of-women-04.webp')
+})
 
 function getObjectPosition(src: string) {
   if (src.includes('chup-adalat-cholche-07')) return 'object-bottom'
-  if (src.includes('daag-03')) return 'object-bottom'
+  if (src.includes('daag-03')) return 'object-center'
   if (src.includes('the-story-telling-04')) return 'object-center'
   if (src.includes('daag-07')) return 'object-center'
   if (src.includes('restaurant-03')) return 'object-center'
@@ -67,22 +72,40 @@ function BackgroundSlideshow() {
     posRef.current = pos
   }, [pos])
 
+  // Always keep the *next* image preloaded so the cross-fade is seamless.
+  useEffect(() => {
+    if (!images.length) return
+    const currOrder = orderRef.current
+    const currPos = posRef.current
+    if (!currOrder.length) return
+    const nextPos = (currPos + 1) % currOrder.length
+    const nextIdx = currOrder[nextPos]
+    preload(images[nextIdx] ?? null)
+  }, [images, pos, order])
+
   useEffect(() => {
     if (!images.length) return
     if (reducedMotion) return
-    let timeoutId: ReturnType<typeof setTimeout> | null = null
-    const tick = () => {
+
+    let fadeTimeout: ReturnType<typeof setTimeout> | null = null
+    let commitTimeout: ReturnType<typeof setTimeout> | null = null
+
+    const intervalId = setInterval(() => {
       const currPos = posRef.current
       const currOrder = orderRef.current
       if (!currOrder.length) return
-      const currIdx = currOrder[currPos % currOrder.length]
+
       const nextPos = (currPos + 1) % currOrder.length
       const nextIdx = currOrder[nextPos]
-      if (nextIdx === currIdx && images.length > 1) return
+
+      // Ensure it's loaded before we start the fade.
       preload(images[nextIdx] ?? null)
+
       setNext(nextIdx)
-      requestAnimationFrame(() => setTransitioning(true))
-      timeoutId = setTimeout(() => {
+      fadeTimeout = setTimeout(() => setTransitioning(true), 50)
+
+      // Fade duration: 1400ms. After that, commit the next image.
+      commitTimeout = setTimeout(() => {
         setPos((prev) => {
           const newPos = (prev + 1) % currOrder.length
           if (newPos === 0 && images.length > 1) {
@@ -94,13 +117,13 @@ function BackgroundSlideshow() {
         })
         setNext(null)
         setTransitioning(false)
-      }, 1200)
-    }
-    // Slightly slower cadence reduces CPU/GPU churn.
-    const intervalId = setInterval(tick, 7000)
+      }, 1400)
+    }, 15000)
+
     return () => {
       clearInterval(intervalId)
-      if (timeoutId) clearTimeout(timeoutId)
+      if (fadeTimeout) clearTimeout(fadeTimeout)
+      if (commitTimeout) clearTimeout(commitTimeout)
     }
   }, [images, images.length, reducedMotion])
 
@@ -110,30 +133,33 @@ function BackgroundSlideshow() {
   const currentSrc = images[currentIdx]
   const nextSrc = next !== null ? images[next] : null
 
-  const baseImgClasses = 'absolute inset-0 h-full w-full object-cover transition-opacity duration-[2000ms] ease-in-out'
+  const baseImgClasses =
+    'absolute inset-0 h-full w-full object-cover will-change-opacity transform-gpu transition-opacity duration-[1400ms] ease-in-out'
   const sizes = '100vw'
 
   return (
-    <div className="fixed inset-x-0 top-0 bottom-0 -z-10 overflow-hidden pointer-events-none">
+    <div className="fixed inset-x-0 top-0 bottom-0 -z-10 overflow-hidden pointer-events-none bg-[#06070a]">
       <ResponsiveImage
-        key={`current-${currentSrc}-${currentIdx}`}
         src={currentSrc}
         alt="Previous play background"
         className={`${baseImgClasses} ${getObjectPosition(currentSrc)} ${nextSrc && transitioning ? 'opacity-0' : 'opacity-70'}`}
         loading="eager"
         decoding="async"
         fetchPriority="low"
+        // IMPORTANT: avoid srcset recomputation + image swapping on resize for the full-bleed background.
+        // This was causing a brief blank/flicker as the browser chose a new candidate.
+        srcSetWidths={[]}
         sizes={sizes}
       />
       {nextSrc ? (
         <ResponsiveImage
-          key={`next-${nextSrc}-${next}`}
           src={nextSrc}
           alt="Previous play background"
           className={`${baseImgClasses} ${getObjectPosition(nextSrc)} ${transitioning ? 'opacity-70' : 'opacity-0'}`}
           loading="eager"
           decoding="async"
           fetchPriority="low"
+          srcSetWidths={[]}
           sizes={sizes}
         />
       ) : null}
@@ -199,7 +225,7 @@ export default function HomePage() {
   const [heroTitle, ...heroSubLines] = hero.headline.split('\n')
 
   return (
-    <div className="relative text-3d-shadow">
+    <div className="relative text-3d-shadow text-home-shadow">
       <BackgroundSlideshow />
 
       <div className="relative z-10 mx-auto max-w-6xl px-4">
@@ -289,9 +315,14 @@ export default function HomePage() {
               <div className="text-sm font-semibold text-white">{bannerPanel.leftTitle}</div>
               <div className="mt-1 text-white/70">{bannerPanel.leftText}</div>
             </div>
-            <Link to={bannerPanel.rightCta.href} className="btn-secondary mt-5 md:mt-0">
-              {bannerPanel.rightCta.label}
-            </Link>
+            <div className="mt-5 flex flex-wrap items-center gap-3 md:mt-0">
+              <Link to={bannerPanel.rightCta.href} className="btn-secondary">
+                {bannerPanel.rightCta.label}
+              </Link>
+              <a href={brochure2024PdfUrl} className="btn-secondary" download>
+                Download brochure (PDF) <ArrowDownToLine className="h-4 w-4" aria-hidden="true" />
+              </a>
+            </div>
           </div>
         </SectionReveal>
 

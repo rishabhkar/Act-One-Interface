@@ -21,6 +21,9 @@ const backstageImages: GalleryImage[] = [
   { id: 'backStage-07', src: new URL('../data/images/gallery/backStage/backStage-07.webp', import.meta.url).href, alt: 'Backstage' },
   { id: 'backStage-08', src: new URL('../data/images/gallery/backStage/backStage-08.webp', import.meta.url).href, alt: 'Backstage' },
   { id: 'backStage-09', src: new URL('../data/images/gallery/backStage/backStage-09.webp', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-10', src: new URL('../data/images/gallery/backStage/backStage-10.webp', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-11', src: new URL('../data/images/gallery/backStage/backStage-11.webp', import.meta.url).href, alt: 'Backstage' },
+  { id: 'backStage-12', src: new URL('../data/images/gallery/backStage/backStage-12.webp', import.meta.url).href, alt: 'Backstage' },
 ]
 
 export default function BackstageGalleryPage() {

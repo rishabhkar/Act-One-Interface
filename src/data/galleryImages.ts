@@ -99,6 +99,8 @@ export const playGallerySections: PlayGallerySection[] = [
   {
     id: 'restaurant',
     title: 'Restaurant',
+    synopsis:
+      'The play “Restora” (Restaurant) is written by Zulfikar Jinnah. Through this socially conscious play, the playwright tells a story that leaves us deeply moved. In the restaurant, live news gathering continues alongside evening entertainment. Alongside the serving of delicious food, stark social disparities are exposed. Just when the so-called elite are busy taking selfies and discussing human rights, the climax of the play is revealed, leaving us astonished. The game being played behind the well-decorated lights and shadows of the restaurant is uncovered. A restaurant emerging from the depths of darkness confronts us with an eternal question. In this way, the play teaches us to recognize real human rights. “Restaurant” strips away the façade of the expensive, artificial elite and reveals the truth. Just as the hollowness beneath pomp and grandeur was exposed in Rabindranath Tagore’s “Kaler Jatra” (Journey of Time), in the same way, the playwright places the driving force in the hands of the working-class people. The real bearer of rights is the one whose human rights are snatched away.',
     images: Array.from({ length: 7 }, (_, i) => {
       const n = String(i + 1).padStart(2, '0')
       return {

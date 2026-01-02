@@ -152,7 +152,7 @@ export const siteContent: SiteContent = {
   navigation: {
     items: [
       { label: 'Home', href: '/' },
-      { label: 'Book Show', href: '/shows' },
+      { label: 'Book Seats', href: '/shows' },
       { label: 'Gallery', href: '/gallery' },
       { label: 'Workshops', href: '/gallery/workshops' },
       { label: 'Members', href: '/members' },
@@ -275,6 +275,25 @@ export const siteContent: SiteContent = {
           link: {
             label: 'Read more',
             href: 'https://www.newswaveindia.com/english/prarambhs-chup-adalat-cholchey-tackling-gender-bias-on-stage/',
+          },
+        },
+        {
+          id: 'press-2025-04-18-aayesha',
+          headline: 'Prarambh presented a non-verbal environmental play—engaging and visually striking',
+          reviewer: 'Dilip Guha',
+          location: 'New Delhi',
+          eventDateText: 'Friday, 18 April 2025',
+          venue: 'Muktadhara Auditorium, Gole Market, New Delhi 110001',
+          summary:
+            'A colourful theatre festival marked World Theatre Day with multiple microplays and a diverse range of performances; Prarambh’s non-verbal production Aayesha captivated especially young viewers with its environmental narrative and strong visual effects, while other entries added variety and social depth to the day’s lineup.',
+          highlightsBullets: [
+            'Themes: environmental awareness, women’s identity, social struggles, empowerment, childhood theatre, education issues, exile and freedom',
+            'Production praised: mask work, lighting, props, stage design, ensemble presentations',
+            'Performance highlights mentioned for Prarambh’s Aayesha, Spotlight’s Alor Pothe, Navapalli Natya’s E ki Nirbasan, Ichchhe-Bitan children’s Bidushak',
+          ],
+          link: {
+            label: 'Read more',
+            href: 'https://sasrayanews.in/world-theatre-day-celebrated-with-grandeur-in-delhi/',
           },
         },
       ],

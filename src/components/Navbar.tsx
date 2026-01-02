@@ -23,7 +23,7 @@ export default function Navbar() {
   }, [])
 
   const { links, primaryLinks, overflowLinks } = useMemo(() => {
-    const primaryLabels = new Set(['Home', 'Book Show', 'Gallery', 'Contact'])
+    const primaryLabels = new Set(['Home', 'Book Seats', 'Gallery', 'Contact'])
     const all = siteContent.navigation.items.map((it) => (
       <NavLink
         key={it.href}

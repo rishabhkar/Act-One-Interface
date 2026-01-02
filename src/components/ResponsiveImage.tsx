@@ -41,6 +41,8 @@ export default function ResponsiveImage({
   style,
 }: ResponsiveImageProps) {
   const srcSet = useMemo(() => {
+    if (!srcSetWidths || srcSetWidths.length === 0) return null
+
     const candidates = srcSetWidths
       .map((w) => buildCandidateUrl(src, w))
       .filter((x): x is string => Boolean(x))
@@ -54,8 +56,8 @@ export default function ResponsiveImage({
   return (
     <img
       src={src}
-      srcSet={srcSet}
-      sizes={sizes}
+      srcSet={srcSet ?? undefined}
+      sizes={srcSet ? sizes : undefined}
       alt={alt}
       className={className}
       width={width}
