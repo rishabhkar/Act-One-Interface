@@ -216,6 +216,17 @@ export const memberProfiles: MemberProfile[] = [
     ],
     contributions: ['Acting', 'Ensemble Participation', 'Emerging Artist'],
   },
+  {
+    id: 'shantanu-ganguly',
+    name: 'Shantanu Ganguly',
+    profession: 'Chartered Accountant',
+    photoSrc: new URL('./images/members/Shantanu.webp', import.meta.url).href,
+    associationText: undefined,
+    theatreJourney: [
+      'Drawn to theatre through curiosity and attentive watching, he engages with the craft beyond the spotlight.\nAssociated with Prarambh for the past one and a half years, learning theatre from within its workings.\nHis interest lies in the mechanics that support performance, where precision meets creativity.\nThrough technical involvement, he contributes quietly to how stories finally arrive on stage.',
+    ],
+    contributions: ['Technical Support', 'Production Assistance', 'Stage Operations', 'Ensemble Support'],
+  },
 ]
 
 export const guestActorProfiles: MemberProfile[] = [
@@ -240,6 +251,20 @@ export const guestActorProfiles: MemberProfile[] = [
       'From the heart of Kolkata to Delhi’s Bengali stage, Seshadri Mitra has journeyed with steadfast passion since 2017.\nTrained under Shri Ramaprasad Banik and guided by maestros across the theatre spectrum, his craft carries both depth and discipline.\nThrough landmark works with Dhumketu, Aakriti, Nabapally Natyo Sangstha, Ichhebitan, and Prarambh, his presence leaves a lasting echo.\nHe remains a seeker for whom theatre is not performance alone, but a way of life.',
     ],
     contributions: ['Acting', 'Performance', 'Ensemble'],
+  },
+  {
+    id: 'guest-arundhati-banerjee',
+    name: 'Arundhati Banerjee',
+    profession: 'Assistant Manager',
+    photoSrc: new URL('./images/members/Arundhati.webp', import.meta.url).href,
+    associationText: undefined,
+    theatreJourney: [
+      'Theatre entered her life early, at the age of 11, and stayed—not as a phase, but as a steady companion shaping how she listens, feels, and responds to the world.',
+      'In her professional life at Nasscom Foundation, she works with people, partnerships, and purpose; in theatre, she explores the same human questions through presence and performance.',
+      'Her grounding in Journalism and Mass Communication informs her sensitivity to narrative, voice, and responsibility in storytelling.',
+      'Performing across Bengali, Hindi, and English, and rooted in the discipline of Bharatanatyam and ongoing Odissi practice, her artistic journey reflects patience, continuity, and respect for tradition.',
+    ],
+    contributions: ['Acting', 'Multilingual Theatre', 'Classical Dance', 'Ensemble Practice', 'Cultural Engagement'],
   },
   {
     id: 'guest-priyadarshi-banerjee',

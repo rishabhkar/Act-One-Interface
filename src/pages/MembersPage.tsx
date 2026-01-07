@@ -86,7 +86,16 @@ function MemberCard({
               {contributions?.length ? (
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="text-xs uppercase tracking-wide text-white/55">Contributions</div>
-                  <p className="mt-2 text-sm text-white/80">{contributions.join(', ')}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {contributions.map((c) => (
+                      <span
+                        key={c}
+                        className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/85 backdrop-blur"
+                      >
+                        {c}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               ) : null}
             </div>

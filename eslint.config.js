@@ -19,5 +19,11 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // These two rules are too restrictive for common, safe patterns used in this repo.
+      // We still keep the rest of the react-hooks rules enabled.
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

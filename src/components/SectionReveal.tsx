@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 
 export type SectionRevealProps = PropsWithChildren<{
@@ -7,28 +7,33 @@ export type SectionRevealProps = PropsWithChildren<{
   delay?: number
 }>
 
+function subscribeToMediaQuery(query: string, callback: () => void) {
+  if (typeof window === 'undefined' || !window.matchMedia) return () => {}
+  const media = window.matchMedia(query)
+  if (typeof media.addEventListener === 'function') media.addEventListener('change', callback)
+  else media.addListener(callback)
+  return () => {
+    if (typeof media.removeEventListener === 'function') media.removeEventListener('change', callback)
+    else media.removeListener(callback)
+  }
+}
+
+function getMediaSnapshot(query: string) {
+  if (typeof window === 'undefined' || !window.matchMedia) return false
+  return window.matchMedia(query).matches
+}
+
 export default function SectionReveal({ children, className, delay = 0 }: SectionRevealProps) {
   const reduce = useReducedMotion()
-  const [allowMotion, setAllowMotion] = useState(false)
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) {
-      setAllowMotion(!reduce)
-      return
-    }
+  // True when on small screens (disable motion there).
+  const isSmall = useSyncExternalStore(
+    (cb) => subscribeToMediaQuery('(max-width: 768px)', cb),
+    () => getMediaSnapshot('(max-width: 768px)'),
+    () => false,
+  )
 
-    const media = window.matchMedia('(max-width: 768px)')
-    const update = () => setAllowMotion(!reduce && !media.matches)
-    update()
-
-    if (typeof media.addEventListener === 'function') media.addEventListener('change', update)
-    else media.addListener(update)
-
-    return () => {
-      if (typeof media.removeEventListener === 'function') media.removeEventListener('change', update)
-      else media.removeListener(update)
-    }
-  }, [reduce])
+  const allowMotion = !reduce && !isSmall
 
   if (!allowMotion) {
     return <div className={className}>{children}</div>

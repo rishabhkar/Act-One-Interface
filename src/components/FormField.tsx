@@ -30,7 +30,7 @@ export default function FormField({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-3">
-        <label htmlFor={id} className="label">
+        <label htmlFor={id} className="label whitespace-nowrap">
           {label} {required ? <span className="text-white/50">*</span> : null}
         </label>
         {rightSlot}

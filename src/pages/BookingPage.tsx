@@ -44,6 +44,7 @@ function validateDetails(state: FormState): FieldErrors {
 
   const phone = state.phoneNumber.trim()
   if (!phone) errors.phoneNumber = 'WhatsApp number is required.'
+  else if (!/^\d{10}$/.test(phone)) errors.phoneNumber = 'Please enter a valid 10-digit mobile number.'
 
   if (!state.consent) errors.consent = 'Please confirm consent to be contacted.'
 
@@ -121,11 +122,30 @@ export default function BookingPage() {
     return count * perTicket
   }, [form.ticketCount, selectedAuditorium?.ticketAmount])
 
+  const isSoldOut = useMemo(() => {
+    if (!selectedAuditorium) return false
+    const seats = Number(selectedAuditorium.availableSeats)
+    return Number.isFinite(seats) && seats <= 0
+  }, [selectedAuditorium])
+
   async function goToTransactionStep(e: React.FormEvent) {
     e.preventDefault()
     setSubmit({ status: 'idle' })
     setForceQrFallback(false)
     setIosAppOptions([])
+
+    if (isSoldOut) {
+      setSubmit({ status: 'error', message: 'This show is sold out. Booking is closed.' })
+      return
+    }
+
+    // Block moving to Step 2 unless consent is checked.
+    if (!form.consent) {
+      const nextErrors = validateDetails(form)
+      setErrors(nextErrors)
+      setSubmit({ status: 'error', message: 'Please agree to receive booking updates to continue.' })
+      return
+    }
 
     const nextErrors = validateDetails(form)
     setErrors(nextErrors)
@@ -169,6 +189,11 @@ export default function BookingPage() {
   async function confirmBooking(e: React.FormEvent) {
     e.preventDefault()
     setSubmit({ status: 'idle' })
+
+    if (isSoldOut) {
+      setSubmit({ status: 'error', message: 'This show is sold out. Booking is closed.' })
+      return
+    }
 
     if (!selectedAuditorium) {
       setSubmit({ status: 'error', message: 'Unable to load show details. Please go back and select a show again.' })
@@ -304,6 +329,16 @@ export default function BookingPage() {
                 </div>
               )}
 
+              {isSoldOut ? (
+                <div
+                  role="status"
+                  className="mt-5 rounded-2xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-100"
+                >
+                  <div className="font-semibold">Sold out</div>
+                  <div className="mt-1 text-amber-100/90">This show has no available seats. Booking is closed.</div>
+                </div>
+              ) : null}
+
               {step === 'details' ? (
                 <form className="mt-6 space-y-5" onSubmit={goToTransactionStep} noValidate>
                   {/* No show/auditorium dropdowns — selection comes from the show card click */}
@@ -319,7 +354,12 @@ export default function BookingPage() {
                       min={1}
                       max={10}
                       value={form.ticketCount}
-                      onChange={(e) => setForm((s) => ({ ...s, ticketCount: Number(e.target.value) }))}
+                      onChange={(e) => {
+                        const raw = e.target.value
+                        const trimmed = raw.replace(/^0+(?=\d)/, '')
+                        const n = Number(trimmed)
+                        setForm((s) => ({ ...s, ticketCount: Number.isFinite(n) ? n : 1 }))
+                      }}
                       aria-invalid={Boolean(errors.ticketCount)}
                       aria-describedby={errors.ticketCount ? 'ticketCount-error' : undefined}
                       required
@@ -380,17 +420,31 @@ export default function BookingPage() {
                     <label className="label" htmlFor="phoneNumber">
                       WhatsApp number
                     </label>
-                    <input
-                      id="phoneNumber"
-                      className="field mt-2"
-                      type="tel"
-                      autoComplete="tel"
-                      value={form.phoneNumber}
-                      onChange={(e) => setForm((s) => ({ ...s, phoneNumber: e.target.value }))}
-                      aria-invalid={Boolean(errors.phoneNumber)}
-                      aria-describedby={errors.phoneNumber ? 'phone-error' : undefined}
-                      required
-                    />
+                    <div className="mt-2 flex rounded-xl border border-white/15 bg-white/5 overflow-hidden">
+                      <div className="flex items-center px-3 text-sm text-white/45 select-none border-r border-white/10">
+                        +91
+                      </div>
+                      <input
+                        id="phoneNumber"
+                        className="field !mt-0 flex-1 !border-0 !bg-transparent"
+                        type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel"
+                        pattern="\d*"
+                        maxLength={10}
+                        value={form.phoneNumber}
+                        onChange={(e) => {
+                          const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10)
+                          setForm((s) => ({ ...s, phoneNumber: digitsOnly }))
+                        }}
+                        aria-invalid={Boolean(errors.phoneNumber)}
+                        aria-describedby={errors.phoneNumber ? 'phone-error' : 'phone-hint'}
+                        required
+                      />
+                    </div>
+                    <div id="phone-hint" className="hint mt-2">
+                      Enter 10 digits (without country code).
+                    </div>
                     {errors.phoneNumber && (
                       <div id="phone-error" className="error mt-2">
                         {errors.phoneNumber}
@@ -424,14 +478,15 @@ export default function BookingPage() {
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <button type="submit" className="btn-primary">
+                    <button type="submit" className="btn-primary" disabled={isSoldOut}>
                       <CreditCard className="h-4 w-4" aria-hidden="true" />
-                      Payment
+                      {isSoldOut ? 'Sold out' : 'Payment'}
                     </button>
 
                     <button
                       type="button"
                       className="btn-secondary"
+                      disabled={submit.status === 'loading'}
                       onClick={() => {
                         setForm(initial)
                         setErrors({})
@@ -446,7 +501,7 @@ export default function BookingPage() {
                     </button>
                   </div>
 
-                  <p className="text-xs text-white/55 whitespace-nowrap overflow-x-auto">
+                  <p className="text-xs text-white/55 whitespace-nowrap w-full overflow-x-auto">
                     Share your details, proceed to payment, then enter your transaction ID to confirm your seats.
                   </p>
                 </form>
@@ -528,7 +583,7 @@ export default function BookingPage() {
                     <button
                       type="submit"
                       className="btn-primary"
-                      disabled={submit.status === 'loading' || submit.status === 'success'}
+                      disabled={isSoldOut || submit.status === 'loading' || submit.status === 'success'}
                     >
                       {submit.status === 'loading' ? (
                         <>
@@ -591,6 +646,21 @@ export default function BookingPage() {
                 <div className="text-right text-white">{form.ticketCount}</div>
               </div>
 
+              {selectedAuditorium ? (
+                <div className="flex items-start justify-between gap-3">
+                  <div className="text-white/60">Seats</div>
+                  <div className="text-right">
+                    <span
+                      className={(selectedAuditorium.availableSeats ?? 0) <= 0 ? 'text-red-300 font-semibold' : 'text-emerald-300 font-semibold'}
+                    >
+                      {selectedAuditorium.availableSeats}
+                    </span>
+                    <span className="text-white/70"> / </span>
+                    <span className="text-white">{selectedAuditorium.totalSeats}</span>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div className="text-sm font-semibold text-white">Booking Procedure</div>
                 <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs text-white/65">
@@ -600,8 +670,9 @@ export default function BookingPage() {
                   <li>Pay and copy the transaction ID</li>
                   <li>Paste it here to confirm booking</li>
                 </ol>
-                <div className="mt-3 text-xs text-white/60">
-                  Booking confirmation will be send with tickets on email within next 48 hours.
+                <div className="mt-3 rounded-xl border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+                  <span className="font-semibold">Booking confirmation will be sent by email within the next 48 hours.</span>{' '}
+                  If you do not receive the email within 48 hours, please contact us.
                 </div>
               </div>
 
