@@ -54,9 +54,3 @@ export async function getAuditoriums(): Promise<Auditorium[]> {
   cache = { ts: now, data }
   return data
 }
-
-// Helper to clear cache programmatically (if needed)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function clearAuditoriumCache() {
-  cache = null
-}

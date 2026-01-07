@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowDownToLine, ExternalLink, Users } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
 import ResponsiveImage from '../components/ResponsiveImage'
@@ -7,26 +7,28 @@ import SectionReveal from '../components/SectionReveal'
 import ShowGrid from '../components/ShowGrid'
 import { siteContent } from '../content/siteContent'
 import heroLogoGif from '../data/images/Logo Image.webp'
-import { memberProfiles } from '../data/members'
+import { guestActorProfiles, memberProfiles } from '../data/members'
 
 const brochure2024PdfUrl = new URL('../data/brochures/brochure-2024.pdf', import.meta.url).toString()
 const logoVideoUrl = new URL('/media/logo.webm', import.meta.url).toString()
 const logoPngUrl = new URL('/media/logo.webp', import.meta.url).toString()
 
 // Home background slideshow images (URLs baked by Vite at build time).
-const previousPlayImages = (Object.values(
-  import.meta.glob('../data/images/gallery/previousPlays/**/*.webp', {
+type GlobUrlModule = { default: string }
+const previousPlayImages = Object.values(
+  import.meta.glob<GlobUrlModule>('../data/images/gallery/previousPlays/**/*.webp', {
     eager: true,
-    as: 'url',
   }),
-) as string[]).filter((src) => {
-  // Exclude the specific image the user requested
-  if (!src) return false
-  return !src.includes('shades-of-women-04.webp')
-})
+)
+  .map((m) => m.default)
+  .filter((v) => v.length > 0)
+  .filter((src) => {
+    // Exclude the specific image the user requested
+    return !src.includes('shades-of-women-04.webp')
+  })
 
 function getObjectPosition(src: string) {
-  if (src.includes('chup-adalat-cholche-07')) return 'object-bottom'
+  if (src.includes('chup-adalat-cholche-07')) return 'object-center'
   if (src.includes('daag-03')) return 'object-center'
   if (src.includes('the-story-telling-04')) return 'object-center'
   if (src.includes('daag-07')) return 'object-center'
@@ -41,135 +43,112 @@ function BackgroundSlideshow() {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }, [])
 
-  const makeOrder = (len: number) => {
-    const arr = Array.from({ length: len }, (_, i) => i)
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[arr[i], arr[j]] = [arr[j], arr[i]]
-    }
-    return arr
-  }
+  const [aIdx, setAIdx] = useState(0)
+  const [bIdx, setBIdx] = useState(1)
+  const [showA, setShowA] = useState(true)
 
-  const [order, setOrder] = useState(() => (images.length ? makeOrder(images.length) : []))
-  const [pos, setPos] = useState(0)
-  const [next, setNext] = useState<number | null>(null)
-  const [transitioning, setTransitioning] = useState(false)
-  const orderRef = useRef(order)
-  const posRef = useRef(pos)
-
-  // Preload helper to avoid sudden image appearance.
-  const preload = (src: string | null) => {
-    if (!src) return
-    const img = new Image()
-    img.decoding = 'async'
-    img.src = src
-  }
-
-  useEffect(() => {
-    orderRef.current = order
-  }, [order])
-
-  useEffect(() => {
-    posRef.current = pos
-  }, [pos])
-
-  // Re-init when image list changes.
+  // Random starting images whenever the set of images changes.
   useEffect(() => {
     if (!images.length) return
-    const newOrder = makeOrder(images.length)
-    setOrder(newOrder)
-    orderRef.current = newOrder
-    setPos(0)
-    posRef.current = 0
-    setNext(null)
-    setTransitioning(false)
-  }, [images.length])
 
-  useEffect(() => {
-    if (!images.length) return
-    if (reducedMotion) return
-
-    let timeoutId: ReturnType<typeof setTimeout> | null = null
-
-    const tick = () => {
-      const currPos = posRef.current
-      const currOrder = orderRef.current
-      if (!currOrder.length) return
-
-      const currIdx = currOrder[currPos % currOrder.length]
-      const nextPos = (currPos + 1) % currOrder.length
-      const nextIdx = currOrder[nextPos]
-
-      // If order somehow degenerates, avoid an infinite no-op.
-      if (nextIdx === currIdx && images.length > 1) return
-
-      preload(images[nextIdx] ?? null)
-      setNext(nextIdx)
-      requestAnimationFrame(() => setTransitioning(true))
-
-      timeoutId = setTimeout(() => {
-        setPos((prev) => {
-          const ordNow = orderRef.current
-          if (!ordNow.length) return 0
-
-          const newPos = (prev + 1) % ordNow.length
-          if (newPos === 0 && images.length > 1) {
-            const newOrder = makeOrder(images.length)
-            setOrder(newOrder)
-            orderRef.current = newOrder
-          }
-          return newPos
-        })
-
-        setNext(null)
-        setTransitioning(false)
-      }, 1200)
+    if (images.length === 1) {
+      setAIdx(0)
+      setBIdx(0)
+      setShowA(true)
+      return
     }
 
-    const intervalId = window.setInterval(tick, 7000)
+    const start = Math.floor(Math.random() * images.length)
+    let next = Math.floor(Math.random() * images.length)
+    if (next === start) next = (next + 1) % images.length
+
+    setAIdx(start)
+    setBIdx(next)
+    setShowA(true)
+  }, [images, images.length])
+
+  // Keep a stable interval and ensure the next image is preloaded before we crossfade.
+  useEffect(() => {
+    if (!images.length) return
+
+    // If we only have one image, just show it.
+    if (images.length === 1) return
+
+    let cancelled = false
+
+    const preload = (src: string) =>
+      new Promise<void>((resolve) => {
+        const img = new Image()
+        img.decoding = 'async'
+        img.onload = () => resolve()
+        img.onerror = () => resolve()
+        img.src = src
+      })
+
+    const pickRandomNext = (current: number) => {
+      if (images.length <= 1) return current
+      let next = Math.floor(Math.random() * images.length)
+      // avoid immediate repeats
+      if (next === current) next = (next + 1) % images.length
+      return next
+    }
+
+    const intervalId = window.setInterval(async () => {
+      if (cancelled) return
+      if (reducedMotion) return
+
+      const current = showA ? aIdx : bIdx
+      const next = pickRandomNext(current)
+
+      // Ensure hidden layer holds the next image before fading.
+      if (showA) setBIdx(next)
+      else setAIdx(next)
+
+      await preload(images[next])
+      if (cancelled) return
+
+      // Flip which layer is visible (crossfade via CSS opacity transitions)
+      setShowA((v) => !v)
+    }, 7000)
+
     return () => {
+      cancelled = true
       window.clearInterval(intervalId)
-      if (timeoutId) window.clearTimeout(timeoutId)
     }
-  }, [images, images.length, reducedMotion])
+  }, [images, images.length, reducedMotion, aIdx, bIdx, showA])
 
   if (!images.length) return null
 
-  const currentIdx = order[pos % (order.length || 1)] ?? 0
-  const currentSrc = images[currentIdx]
-  const nextSrc = next !== null ? images[next] : null
+  const aSrc = images[aIdx] ?? ''
+  const bSrc = images[bIdx] ?? ''
 
   const baseImgClasses =
     'absolute inset-0 h-full w-full object-cover will-change-opacity transform-gpu transition-opacity duration-[2000ms] ease-in-out'
-  const sizes = '100vw'
 
   return (
     <div className="fixed inset-x-0 top-0 bottom-0 -z-10 overflow-hidden pointer-events-none bg-[#06070a]">
       <ResponsiveImage
-        key={`current-${currentSrc}-${currentIdx}`}
-        src={currentSrc}
+        key={`bg-a-${aSrc}-${aIdx}`}
+        src={aSrc}
         alt="Previous play background"
-        className={`${baseImgClasses} ${getObjectPosition(currentSrc)} ${nextSrc && transitioning ? 'opacity-0' : 'opacity-70'}`}
+        className={`${baseImgClasses} ${getObjectPosition(aSrc)} ${showA ? 'opacity-70' : 'opacity-0'}`}
         loading="eager"
         decoding="async"
         fetchPriority="low"
         srcSetWidths={[]}
-        sizes={sizes}
+        sizes="100vw"
       />
-
-      {nextSrc ? (
-        <ResponsiveImage
-          key={`next-${nextSrc}-${next}`}
-          src={nextSrc}
-          alt="Previous play background"
-          className={`${baseImgClasses} ${getObjectPosition(nextSrc)} ${transitioning ? 'opacity-70' : 'opacity-0'}`}
-          loading="eager"
-          decoding="async"
-          fetchPriority="low"
-          srcSetWidths={[]}
-          sizes={sizes}
-        />
-      ) : null}
+      <ResponsiveImage
+        key={`bg-b-${bSrc}-${bIdx}`}
+        src={bSrc}
+        alt="Previous play background"
+        className={`${baseImgClasses} ${getObjectPosition(bSrc)} ${showA ? 'opacity-0' : 'opacity-70'}`}
+        loading="eager"
+        decoding="async"
+        fetchPriority="low"
+        srcSetWidths={[]}
+        sizes="100vw"
+      />
     </div>
   )
 }
@@ -230,6 +209,33 @@ function HeroLogo() {
 export default function HomePage() {
   const { hero, aboutOurCraftPanel, bannerPanel, pressAndReviewsSection } = siteContent.homePage
   const [heroTitle, ...heroSubLines] = hero.headline.split('\n')
+
+  const upcomingPosterUrl = useMemo(() => new URL('../data/images/Poster.webp', import.meta.url).toString(), [])
+  const allPeople = useMemo(() => [...memberProfiles, ...guestActorProfiles], [])
+
+  // Preload the first visible member thumbnails so they appear instantly on page load.
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    const toPreload = allPeople.slice(0, 12).map((p) => p.photoSrc).filter(Boolean)
+    const links: HTMLLinkElement[] = []
+    toPreload.forEach((href) => {
+      try {
+        const l = document.createElement('link')
+        l.rel = 'preload'
+        l.as = 'image'
+        l.href = href
+        // Use setAttribute to avoid TypeScript/ESLint "any" complaints.
+        l.setAttribute('fetchpriority', 'high')
+        document.head.appendChild(l)
+        links.push(l)
+      } catch {
+        // ignore failures silently
+      }
+    })
+    return () => {
+      links.forEach((l) => l.remove())
+    }
+  }, [allPeople])
 
   return (
     <div className="relative text-3d-shadow text-home-shadow">
@@ -352,23 +358,37 @@ export default function HomePage() {
                     Members
                   </h3>
                   <p className="mt-2 text-sm text-white/70 text-justify">
-                    Meet the artists and organisers behind Prarambh—the people who carry rehearsal into performance.
+                    Meet the artists and organisers behind Prarambh—and our guest actors.
                   </p>
                 </div>
                 <Users className="h-6 w-6 text-white/60 flex-shrink-0" aria-hidden="true" />
               </div>
 
               <div className="mt-5 flex flex-wrap gap-3">
-                {memberProfiles.slice(0, 12).map((m) => (
-                  <Link key={m.id} to={`/members#${m.id}`} className="flex flex-col items-center w-16 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
+                {allPeople.map((m) => (
+                  <Link
+                    key={m.id}
+                    to={`/members#${m.id}`}
+                    className="flex flex-col items-center w-16 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
+                  >
                     <img
                       src={m.photoSrc}
                       alt={m.name}
+                      width={56}
+                      height={56}
                       className="h-14 w-14 rounded-full object-cover border border-white/15 bg-white/5"
-                      loading="lazy"
+                      loading="eager"
                       decoding="async"
+                      fetchPriority="high"
+                      onError={(e) => {
+                        const img = e.currentTarget
+                        img.onerror = null
+                        img.src = new URL('/media/fallback-avatar.svg', import.meta.url).toString()
+                      }}
                     />
-                    <span className="mt-1 text-[10px] text-white/70 text-center line-clamp-2 leading-tight">{m.name}</span>
+                    <span className="mt-1 text-[10px] text-white/70 text-center line-clamp-2 leading-tight">
+                      {m.name}
+                    </span>
                   </Link>
                 ))}
               </div>
@@ -379,6 +399,47 @@ export default function HomePage() {
             </GlassPanel>
           </div>
         </SectionReveal>
+
+        <section className="mt-12">
+          <SectionReveal>
+            <h2 className="font-serif text-white section-heading">Upcoming shows poster</h2>
+          </SectionReveal>
+
+          <SectionReveal delay={0.08}>
+            <GlassPanel
+              className="mt-6 p-4 sm:p-6 md:p-8"
+              labelledBy="upcoming-poster"
+              style={
+                ({
+                  ['--glass-gradient']:
+                    'linear-gradient(145deg, rgba(30, 76, 140, 0.22) 0%, rgba(0, 10, 55, 0.55) 55%, rgba(0, 0, 0, 0.25) 100%)',
+                } as React.CSSProperties)
+              }
+            >
+              <div className="flex items-center justify-between gap-4">
+                <h3 id="upcoming-poster" className="text-lg font-semibold text-white">
+                  Upcoming shows
+                </h3>
+              </div>
+
+              <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+                <img
+                  src={upcomingPosterUrl}
+                  alt="Upcoming shows poster"
+                  className="w-full h-auto"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link to="/shows" className="btn-primary">
+                  Book Seats
+                </Link>
+              </div>
+            </GlassPanel>
+          </SectionReveal>
+        </section>
 
         <section className="mt-12">
           <SectionReveal>
