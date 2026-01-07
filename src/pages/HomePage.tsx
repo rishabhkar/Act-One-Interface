@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowDownToLine, ExternalLink, Users } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import GlassPanel from '../components/GlassPanel'
 import ResponsiveImage from '../components/ResponsiveImage'
@@ -47,7 +47,44 @@ function BackgroundSlideshow() {
   const [bIdx, setBIdx] = useState(1)
   const [showA, setShowA] = useState(true)
 
-  // Random starting images whenever the set of images changes.
+  // rolling preload cache (mutable by design)
+  const preloadCacheRef = useRef<Map<string, Promise<void>>>(new Map())
+
+  const preload = useMemo(
+    () =>
+      (src: string) => {
+        if (!src) return Promise.resolve()
+        const cache = preloadCacheRef.current
+        const existing = cache.get(src)
+        if (existing) return existing
+
+        const p = new Promise<void>((resolve) => {
+          const img = new Image()
+          img.decoding = 'async'
+          img.onload = () => resolve()
+          img.onerror = () => resolve()
+          img.src = src
+        })
+
+        cache.set(src, p)
+        return p
+      },
+    [],
+  )
+
+  const preloadBatch = useMemo(
+    () =>
+      (start: number, count: number) => {
+        if (!images.length) return
+        for (let i = 0; i < Math.min(count, images.length); i++) {
+          const idx = (start + i) % images.length
+          void preload(images[idx] ?? '')
+        }
+      },
+    [images, preload],
+  )
+
+  // Random starting images whenever the set of images changes + preload initial buffer.
   useEffect(() => {
     if (!images.length) return
 
@@ -55,6 +92,7 @@ function BackgroundSlideshow() {
       setAIdx(0)
       setBIdx(0)
       setShowA(true)
+      void preload(images[0] ?? '')
       return
     }
 
@@ -65,25 +103,18 @@ function BackgroundSlideshow() {
     setAIdx(start)
     setBIdx(next)
     setShowA(true)
-  }, [images, images.length])
+
+    // Preload 10 images at boot.
+    preloadBatch(start, 10)
+  }, [images, images.length, preload, preloadBatch])
 
   // Keep a stable interval and ensure the next image is preloaded before we crossfade.
   useEffect(() => {
     if (!images.length) return
-
-    // If we only have one image, just show it.
     if (images.length === 1) return
 
     let cancelled = false
-
-    const preload = (src: string) =>
-      new Promise<void>((resolve) => {
-        const img = new Image()
-        img.decoding = 'async'
-        img.onload = () => resolve()
-        img.onerror = () => resolve()
-        img.src = src
-      })
+    let shownCount = 0
 
     const pickRandomNext = (current: number) => {
       if (images.length <= 1) return current
@@ -96,6 +127,7 @@ function BackgroundSlideshow() {
     const intervalId = window.setInterval(async () => {
       if (cancelled) return
       if (reducedMotion) return
+      if (document.hidden) return
 
       const current = showA ? aIdx : bIdx
       const next = pickRandomNext(current)
@@ -104,23 +136,36 @@ function BackgroundSlideshow() {
       if (showA) setBIdx(next)
       else setAIdx(next)
 
-      await preload(images[next])
+      // Guarantee next image is loaded before flipping opacity.
+      await preload(images[next] ?? '')
       if (cancelled) return
 
-      // Flip which layer is visible (crossfade via CSS opacity transitions)
       setShowA((v) => !v)
+
+      shownCount += 1
+      // When we hit the 8th shown image, preload the next 10 (rolling buffer).
+      if (shownCount % 10 === 8) {
+        preloadBatch(next, 10)
+      }
     }, 7000)
 
     return () => {
       cancelled = true
       window.clearInterval(intervalId)
     }
-  }, [images, images.length, reducedMotion, aIdx, bIdx, showA])
-
-  if (!images.length) return null
+  }, [images, images.length, reducedMotion, aIdx, bIdx, showA, preload, preloadBatch])
 
   const aSrc = images[aIdx] ?? ''
   const bSrc = images[bIdx] ?? ''
+
+  // warm current sources (safe no-op when empty)
+  useEffect(() => {
+    if (!images.length) return
+    void preload(aSrc)
+    void preload(bSrc)
+  }, [images.length, aSrc, bSrc, preload])
+
+  if (!images.length) return null
 
   const baseImgClasses =
     'absolute inset-0 h-full w-full object-cover will-change-opacity transform-gpu transition-opacity duration-[2000ms] ease-in-out'
@@ -209,6 +254,26 @@ function HeroLogo() {
 export default function HomePage() {
   const { hero, aboutOurCraftPanel, bannerPanel, pressAndReviewsSection } = siteContent.homePage
   const [heroTitle, ...heroSubLines] = hero.headline.split('\n')
+
+  // Warm up backend once when the home page is loaded.
+  useEffect(() => {
+    let cancelled = false
+
+    const warm = async () => {
+      try {
+        const base = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ?? ''
+        const url = base ? `${base}/actuator/health` : '/actuator/health'
+        await fetch(url, { method: 'GET', headers: { Accept: 'application/json' } })
+      } catch {
+        // ignore warmup failures
+      }
+    }
+
+    if (!cancelled) void warm()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const upcomingPosterUrl = useMemo(() => new URL('../data/images/Poster.webp', import.meta.url).toString(), [])
   const allPeople = useMemo(() => [...memberProfiles, ...guestActorProfiles], [])
@@ -402,7 +467,7 @@ export default function HomePage() {
 
         <section className="mt-12">
           <SectionReveal>
-            <h2 className="font-serif text-white section-heading">Upcoming shows poster</h2>
+            <h2 className="font-serif text-white section-heading">Upcoming Shows</h2>
           </SectionReveal>
 
           <SectionReveal delay={0.08}>
@@ -416,12 +481,6 @@ export default function HomePage() {
                 } as React.CSSProperties)
               }
             >
-              <div className="flex items-center justify-between gap-4">
-                <h3 id="upcoming-poster" className="text-lg font-semibold text-white">
-                  Upcoming shows
-                </h3>
-              </div>
-
               <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-black/20">
                 <img
                   src={upcomingPosterUrl}

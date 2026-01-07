@@ -27,6 +27,7 @@ function validateSupport(form: SupportForm) {
   if (!form.email.trim()) errors.email = 'Email is required.'
   else if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) errors.email = 'Enter a valid email.'
   if (!form.phone.trim()) errors.phone = 'Phone Number is required.'
+  else if (!/^\d{10}$/.test(form.phone.trim())) errors.phone = 'Please enter a valid 10-digit mobile number.'
   if (!form.message.trim()) errors.message = 'Message is required.'
   return errors
 }
@@ -37,6 +38,7 @@ function validateFeedback(form: FeedbackForm) {
   if (!form.email.trim()) errors.email = 'Email is required.'
   else if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) errors.email = 'Enter a valid email.'
   if (!form.phone.trim()) errors.phone = 'Phone Number is required.'
+  else if (!/^\d{10}$/.test(form.phone.trim())) errors.phone = 'Please enter a valid 10-digit mobile number.'
   if (!form.showName.trim()) errors.showName = 'Show Name is required.'
   if (!form.showVenue.trim()) errors.showVenue = 'Show Venue is required.'
   if (!form.message.trim()) errors.message = 'Feedback message is required.'
@@ -128,15 +130,39 @@ export default function SupportFeedbackPage() {
                     error={feedbackErrors.email}
                   />
 
-                  <FormField
-                    id="feedback-phone"
-                    label="Phone Number"
-                    required
-                    type="tel"
-                    value={feedbackForm.phone}
-                    onChange={(v) => setFeedbackForm((s) => ({ ...s, phone: v }))}
-                    error={feedbackErrors.phone}
-                  />
+                  {/* Phone number: prefix box exactly like booking */}
+                  <div>
+                    <label className="label" htmlFor="feedback-phone">
+                      Phone Number <span className="text-white/50">*</span>
+                    </label>
+                    <div className="mt-2 flex rounded-xl border border-white/15 bg-white/5 overflow-hidden">
+                      <div className="flex items-center px-3 text-sm text-white/45 select-none border-r border-white/10">
+                        +91
+                      </div>
+                      <input
+                        id="feedback-phone"
+                        className="field !mt-0 flex-1 !border-0 !bg-transparent"
+                        type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel"
+                        pattern="\d*"
+                        maxLength={10}
+                        value={feedbackForm.phone}
+                        onChange={(e) => {
+                          const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10)
+                          setFeedbackForm((s) => ({ ...s, phone: digitsOnly }))
+                        }}
+                        aria-invalid={Boolean(feedbackErrors.phone)}
+                        aria-describedby={feedbackErrors.phone ? 'support-feedback-phone-error' : undefined}
+                        required
+                      />
+                    </div>
+                    {feedbackErrors.phone ? (
+                      <div id="support-feedback-phone-error" className="error mt-2">
+                        {feedbackErrors.phone}
+                      </div>
+                    ) : null}
+                  </div>
 
                   <FormField
                     id="feedback-showName"
@@ -218,15 +244,39 @@ export default function SupportFeedbackPage() {
                   error={supportErrors.email}
                 />
 
-                <FormField
-                  id="support-phone"
-                  label="Phone Number"
-                  required
-                  type="tel"
-                  value={supportForm.phone}
-                  onChange={(v) => setSupportForm((s) => ({ ...s, phone: v }))}
-                  error={supportErrors.phone}
-                />
+                {/* Phone number: prefix box exactly like booking */}
+                <div>
+                  <label className="label" htmlFor="support-phone">
+                    Phone Number <span className="text-white/50">*</span>
+                  </label>
+                  <div className="mt-2 flex rounded-xl border border-white/15 bg-white/5 overflow-hidden">
+                    <div className="flex items-center px-3 text-sm text-white/45 select-none border-r border-white/10">
+                      +91
+                    </div>
+                    <input
+                      id="support-phone"
+                      className="field !mt-0 flex-1 !border-0 !bg-transparent"
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel"
+                      pattern="\d*"
+                      maxLength={10}
+                      value={supportForm.phone}
+                      onChange={(e) => {
+                        const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10)
+                        setSupportForm((s) => ({ ...s, phone: digitsOnly }))
+                      }}
+                      aria-invalid={Boolean(supportErrors.phone)}
+                      aria-describedby={supportErrors.phone ? 'support-phone-error' : undefined}
+                      required
+                    />
+                  </div>
+                  {supportErrors.phone ? (
+                    <div id="support-phone-error" className="error mt-2">
+                      {supportErrors.phone}
+                    </div>
+                  ) : null}
+                </div>
 
                 <FormField
                   id="support-message"

@@ -11,82 +11,88 @@ function clamp01(n: number) {
 // Looping background audio with a subtle fade-out/fade-in around the loop boundary.
 export function BackgroundAudio({ volume = 0.5 }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [started, setStarted] = useState(false)
+  // Enabled by default. If autoplay is blocked, we flip to false and show Enable.
+  const [enabled, setEnabled] = useState(true)
+  const [busy, setBusy] = useState(false)
   const vol = useMemo(() => clamp01(volume), [volume])
 
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
     audio.volume = vol
+    audio.loop = true
   }, [vol])
 
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
 
-    // Only run the fade loop once playback has actually started.
-    if (!started) return
+    let cancelled = false
 
-    const FADE_SECONDS = 1.25
-    const FADE_IN_SECONDS = 0.8
-
-    let raf = 0
-
-    const step = () => {
-      const a = audioRef.current
-      if (!a) return
-
-      // If duration isn't known yet, keep checking.
-      if (!Number.isFinite(a.duration) || a.duration <= 0) {
-        raf = requestAnimationFrame(step)
-        return
-      }
-
-      // Fade-in at the start.
-      if (a.currentTime <= FADE_IN_SECONDS) {
-        const f = a.currentTime / FADE_IN_SECONDS
-        a.volume = clamp01(vol * f)
-      }
-
-      // Fade-out near the end.
-      const remaining = a.duration - a.currentTime
-      if (remaining <= FADE_SECONDS) {
-        const f = Math.max(0, remaining / FADE_SECONDS)
-        a.volume = clamp01(Math.min(vol, vol * f))
-
-        // When we'd hit the end, restart seamlessly.
-        if (remaining <= 0.05) {
-          a.currentTime = 0
-          // keep audio playing, volume will fade in automatically
-        }
-      } else {
-        // Normal playback volume.
-        a.volume = vol
-      }
-
-      raf = requestAnimationFrame(step)
-    }
-
-    raf = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(raf)
-  }, [vol, started])
-
-  useEffect(() => {
-    const tryStart = async () => {
-      const audio = audioRef.current
-      if (!audio) return
-      if (started) return
-
+    const apply = async () => {
       try {
-        await audio.play()
-        setStarted(true)
+        audio.volume = vol
+        audio.loop = true
+
+        if (enabled) {
+          await audio.play()
+        } else {
+          audio.pause()
+        }
       } catch {
-        // ignore; user gesture will be required
+        // Autoplay blocked; show Enable button.
+        if (!cancelled) setEnabled(false)
       }
     }
 
-    tryStart()
-  }, [started])
+    void apply()
+    return () => {
+      cancelled = true
+    }
+  }, [enabled, vol])
+
+  const enableMusic = async () => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (busy) return
+
+    setBusy(true)
+    try {
+      audio.volume = vol
+      audio.loop = true
+      await audio.play()
+      setEnabled(true)
+    } catch {
+      // keep disabled
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const disableMusic = async () => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (busy) return
+
+    setBusy(true)
+    // slight fade-out as requested, without altering the file itself
+    const from = audio.volume
+    const durationMs = 600
+    const steps = 12
+    const stepMs = Math.max(16, Math.floor(durationMs / steps))
+
+    for (let i = 1; i <= steps; i++) {
+      audio.volume = clamp01(from * (1 - i / steps))
+      await new Promise((r) => window.setTimeout(r, stepMs))
+    }
+
+    audio.pause()
+    audio.currentTime = 0
+    audio.volume = vol
+
+    setEnabled(false)
+    setBusy(false)
+  }
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4">
@@ -96,23 +102,27 @@ export function BackgroundAudio({ volume = 0.5 }: Props) {
         preload="auto"
       />
 
-      {!started && (
+      {enabled ? (
         <button
           type="button"
           className="pointer-events-auto rounded-xl border border-white/10 bg-black/40 px-4 py-2 text-xs text-white/80 backdrop-blur hover:bg-black/55"
-          onClick={async () => {
-            const audio = audioRef.current
-            if (!audio) return
-            audio.volume = vol
-            try {
-              await audio.play()
-              setStarted(true)
-            } catch {
-              // ignore
-            }
+          onClick={() => {
+            void disableMusic()
           }}
+          disabled={busy}
         >
-          Enable music
+          {busy ? 'Disabling...' : 'Disable music'}
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="pointer-events-auto rounded-xl border border-white/10 bg-black/40 px-4 py-2 text-xs text-white/80 backdrop-blur hover:bg-black/55"
+          onClick={() => {
+            void enableMusic()
+          }}
+          disabled={busy}
+        >
+          {busy ? 'Enabling...' : 'Enable music'}
         </button>
       )}
     </div>

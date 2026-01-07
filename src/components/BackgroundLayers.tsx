@@ -143,9 +143,8 @@ export default function BackgroundLayers() {
 
   // Disable DEFAULT_BG cycling on home (home has its own slideshow).
   useEffect(() => {
-    if (isHome) return
-    if (usePerPageBackground) return
-    if (reducedMotion || lowVisualPriority) return
+    const shouldCycle = !isHome && !usePerPageBackground && !reducedMotion && !lowVisualPriority
+    if (!shouldCycle) return
 
     let cancelled = false
 

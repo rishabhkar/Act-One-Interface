@@ -21,9 +21,8 @@ export default function PreviousShowsPage() {
       <SectionReveal>
         <header className="pt-10">
           <h1 className="font-serif text-4xl text-white md:text-5xl">Previous shows</h1>
-          <p className="mt-3 max-w-prose text-white/70">
-            When the final curtain falls and the stage lights dim, the echoes of the stories we told linger on in the
-            silence: A look back at our past productions
+          <p className="mt-3 max-w-none text-white/70 whitespace-nowrap overflow-x-auto">
+            When the final curtain falls and the stage lights dim, the echoes of the stories we told linger on in the silence: A look back at our past productions
           </p>
         </header>
       </SectionReveal>

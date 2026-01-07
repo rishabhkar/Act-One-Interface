@@ -21,16 +21,9 @@ const BASE_PREFIX = DEFAULT_BASE ? DEFAULT_BASE : ''
 
 const ADMIN_PASSWORD = (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) ?? 'prarambh-admin-delhi'
 
-// In-memory cache — cleared on page refresh. TTL in ms (10 minutes).
-const TTL = 10 * 60 * 1000
-let cache: { ts: number; data: Auditorium[] } | null = null
+// NOTE: Do not cache auditorium calls; seat availability must be fresh on every page load.
 
 export async function getAuditoriums(): Promise<Auditorium[]> {
-  const now = Date.now()
-  if (cache && now - cache.ts < TTL) {
-    return cache.data
-  }
-
   // Use a relative path by default so Vite dev proxy can avoid CORS.
   // If VITE_API_BASE_URL is set, call that backend directly.
   const url = `${BASE_PREFIX}/api/auditoriums`
@@ -51,6 +44,5 @@ export async function getAuditoriums(): Promise<Auditorium[]> {
   const data = (await res.json().catch(() => null)) as Auditorium[] | null
   if (!Array.isArray(data)) return []
 
-  cache = { ts: now, data }
   return data
 }

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { playGallerySections } from '../data/galleryImages'
+import { useGlassGradientFromImg } from '../lib/useGlassGradientFromImg'
 
 function clampIndex(i: number, len: number) {
   if (len <= 0) return 0
@@ -26,11 +27,23 @@ function PlayGallerySection({
   const active = images.length ? images[clampIndex(index, images.length)] : null
 
   const activeImgRef = useRef<HTMLImageElement | null>(null)
+  const gradient = useGlassGradientFromImg(activeImgRef, {
+    enabled: true,
+    cacheKey: active?.src ?? null,
+  })
 
   return (
     <SectionReveal>
       <div>
-        <GlassPanel className="p-4 sm:p-6 text-justify" labelledBy={`gallery-${title}`}>
+        <GlassPanel
+          className="p-4 sm:p-6 text-justify"
+          labelledBy={`gallery-${title}`}
+          style={
+            gradient
+              ? ({ ['--glass-gradient']: gradient } as React.CSSProperties)
+              : undefined
+          }
+        >
           <div className="flex flex-col gap-4">
             {/* Title + buttons */}
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

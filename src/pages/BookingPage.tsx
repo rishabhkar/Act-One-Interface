@@ -25,7 +25,7 @@ type FlowStep = 'details' | 'transaction'
 type SubmitState =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'success'; ticketId: string }
+  | { status: 'success' }
   | { status: 'error'; message: string }
 
 function validateDetails(state: FormState): FieldErrors {
@@ -110,11 +110,12 @@ export default function BookingPage() {
     setForm(initial)
   }, [initial])
 
-  useEffect(() => {
-    if (formSectionRef.current) {
-      formSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, [step])
+  // Remove auto-scrolling on step changes; layout already scrolls to top on route changes.
+  // useEffect(() => {
+  //   if (formSectionRef.current) {
+  //     formSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  //   }
+  // }, [step])
 
   const amountPayable = useMemo(() => {
     const count = Number.isFinite(form.ticketCount) ? Math.max(1, Math.floor(form.ticketCount)) : 1
@@ -229,7 +230,9 @@ export default function BookingPage() {
         transactionId: tid,
       })
 
-      setSubmit({ status: 'success', ticketId: res.ticketId })
+      // ticket number should not be shown in UI
+      void res
+      setSubmit({ status: 'success' })
 
       // Reset back to the main form so the user can book again.
       setTransactionId('')
@@ -312,9 +315,6 @@ export default function BookingPage() {
                   </div>
                   <div className="mt-1 text-emerald-100/90">
                     Transaction recorded. Tickets will be issued after manual approval. You will receive the tickets over the registered email within 48 hours.
-                  </div>
-                  <div className="mt-2 text-emerald-100/90">
-                    Ticket ID: <span className="font-semibold">{submit.ticketId}</span>
                   </div>
                 </div>
               )}
@@ -501,7 +501,7 @@ export default function BookingPage() {
                     </button>
                   </div>
 
-                  <p className="text-xs text-white/55 whitespace-nowrap w-full overflow-x-auto">
+                  <p className="text-xs text-white/55 whitespace-nowrap w-full max-w-none overflow-x-auto">
                     Share your details, proceed to payment, then enter your transaction ID to confirm your seats.
                   </p>
                 </form>
@@ -666,8 +666,8 @@ export default function BookingPage() {
                 <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs text-white/65">
                   <li>Fill in the registration details</li>
                   <li>Click on Payment.</li>
-                  <li>You will be re-directed to UPI</li>
-                  <li>Pay and copy the transaction ID</li>
+                  <li>You will be re-directed to UPI (phone) and will be shown QR Code (desktop)</li>
+                  <li>Pay and copy the Transaction Id / Reference Number</li>
                   <li>Paste it here to confirm booking</li>
                 </ol>
                 <div className="mt-3 rounded-xl border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">

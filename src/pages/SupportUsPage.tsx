@@ -20,7 +20,11 @@ function validateSupport(form: SupportForm) {
   if (!form.fullName.trim()) errors.fullName = 'Full Name is required.'
   if (!form.email.trim()) errors.email = 'Email is required.'
   else if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) errors.email = 'Enter a valid email.'
-  if (!form.phone.trim()) errors.phone = 'Phone Number is required.'
+
+  const phone = form.phone.trim()
+  if (!phone) errors.phone = 'Phone Number is required.'
+  else if (!/^\d{10}$/.test(phone)) errors.phone = 'Please enter a valid 10-digit mobile number.'
+
   if (!form.message.trim()) errors.message = 'Message is required.'
 
   const amount = Number(form.amount)
@@ -101,7 +105,7 @@ export default function SupportUsPage() {
         <div className="pt-10">
           <h1 className="font-serif text-3xl text-white md:text-4xl">Support Us</h1>
           <p className="mt-3 w-full max-w-none text-sm text-white/70 text-justify">
-            Act One exists to keep stories alive—by making space for language, music, memory, and the
+            Prarambh exists to keep stories alive—by making space for language, music, memory, and the
             people who carry them. If our work has moved you, consider supporting us so we can keep
             nurturing rehearsal rooms, young artists, and performances that celebrate culture with
             care.
@@ -169,16 +173,39 @@ export default function SupportUsPage() {
                   placeholder="name@example.com"
                 />
 
-                <FormField
-                  id="support-phone"
-                  label="Phone Number"
-                  required
-                  type="tel"
-                  value={form.phone}
-                  onChange={(v) => setForm((s) => ({ ...s, phone: v }))}
-                  error={errors.phone}
-                  placeholder="+91…"
-                />
+                {/* Phone number: prefix box exactly like booking */}
+                <div>
+                  <label className="label" htmlFor="support-phone">
+                    Phone Number <span className="text-white/50">*</span>
+                  </label>
+                  <div className="mt-2 flex rounded-xl border border-white/15 bg-white/5 overflow-hidden">
+                    <div className="flex items-center px-3 text-sm text-white/45 select-none border-r border-white/10">
+                      +91
+                    </div>
+                    <input
+                      id="support-phone"
+                      className="field !mt-0 flex-1 !border-0 !bg-transparent"
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel"
+                      pattern="\d*"
+                      maxLength={10}
+                      value={form.phone}
+                      onChange={(e) => {
+                        const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10)
+                        setForm((s) => ({ ...s, phone: digitsOnly }))
+                      }}
+                      aria-invalid={Boolean(errors.phone)}
+                      aria-describedby={errors.phone ? 'support-phone-error' : undefined}
+                      required
+                    />
+                  </div>
+                  {errors.phone ? (
+                    <div id="support-phone-error" className="error mt-2">
+                      {errors.phone}
+                    </div>
+                  ) : null}
+                </div>
 
                 <FormField
                   id="support-amount"
@@ -210,12 +237,11 @@ export default function SupportUsPage() {
                   onChange={(v) => setForm((s) => ({ ...s, transactionId: v }))}
                   error={errors.transactionId}
                   placeholder="Paste the UPI transaction reference"
-                  rightSlot={
-                    <span className="text-xs text-white/60">
-                      Transaction References are required for government auditing purposes
-                    </span>
-                  }
                 />
+
+                <div className="-mt-3 text-xs text-white/60">
+                  Transaction References are required for government auditing purposes
+                </div>
 
                 {submitState === 'error' ? (
                   <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-100">

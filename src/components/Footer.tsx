@@ -93,7 +93,7 @@ export default function Footer() {
             {siteContent.footer.credits?.developer && <div>{siteContent.footer.credits.developer}</div>}
             {siteContent.footer.credits?.music && <div>{siteContent.footer.credits.music}</div>}
           </div>
-          <div className="md:text-right">Built for Firebase Hosting · Spark plan ready</div>
+          <div className="md:text-right">Built for Firebase Hosting</div>
         </div>
       </div>
     </footer>

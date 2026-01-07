@@ -129,7 +129,15 @@ export default function Navbar() {
                     <ChevronDown className={clsx('h-4 w-4 transition', moreOpen && 'rotate-180')} aria-hidden="true" />
                   </button>
                   {moreOpen && (
-                    <div className="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl border border-white/10 bg-black/70 backdrop-blur-md shadow-lg">
+                    <div
+                      className="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl border border-white/10 bg-black/25 backdrop-blur-md shadow-lg"
+                      style={{
+                        backgroundImage:
+                          // Base dark glass + subtle diagonal highlight (directional light)
+                          'linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 22%, rgba(255,255,255,0.00) 48%), linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.25) 100%)',
+                        backgroundBlendMode: 'screen, normal',
+                      }}
+                    >
                       {overflowLinks}
                     </div>
                   )}
