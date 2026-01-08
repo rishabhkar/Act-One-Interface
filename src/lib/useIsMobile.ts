@@ -1,30 +1,28 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Small hook to switch layout by viewport width.
- * Uses JS (not just CSS) so we can avoid mounting heavy sections on mobile.
+ * Small hook to switch layout by device capability (not width).
+ * This keeps the mobile UI on phones even when rotated to landscape.
  */
-export default function useIsMobile(maxWidthPx = 640) {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return false
-    return window.matchMedia(`(max-width: ${maxWidthPx}px)`).matches
-  })
+export default function useIsMobile(_maxWidthPx = 640) {
+  // Backward-compatible parameter (call sites pass a breakpoint). No-op.
+  void _maxWidthPx
+
+  const [isMobile, setIsMobile] = useState(() => getIsMobileDevice())
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return
-    const mq = window.matchMedia(`(max-width: ${maxWidthPx}px)`) as MediaQueryList
-
-    const onChange = () => setIsMobile(mq.matches)
-    onChange()
-
-    if (typeof mq.addEventListener === 'function') mq.addEventListener('change', onChange)
-    else mq.addListener(onChange)
-
-    return () => {
-      if (typeof mq.removeEventListener === 'function') mq.removeEventListener('change', onChange)
-      else mq.removeListener(onChange)
-    }
-  }, [maxWidthPx])
+    setIsMobile(getIsMobileDevice())
+    const handler = () => setIsMobile(getIsMobileDevice())
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
 
   return isMobile
+}
+
+function getIsMobileDevice() {
+  return (
+    typeof window !== 'undefined' &&
+    /Mobi|Android/i.test(window.navigator.userAgent)
+  )
 }

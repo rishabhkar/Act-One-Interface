@@ -1,5 +1,6 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, ExternalLink, ArrowDownToLine } from 'lucide-react'
+import { ChevronRight, ArrowDownToLine } from 'lucide-react'
 import MobileLayout from '../components/mobile/MobileLayout'
 import { MobileGlassCard, MobileCollapsible, MobileReviewCard } from '../components/mobile/MobileUIComponents'
 import ShowGrid from '../components/ShowGrid'
@@ -18,6 +19,28 @@ export default function MobileHomePage({ BackgroundSlideshow }: Props) {
   const logoUrl = new URL('../data/images/Logo Image.webp', import.meta.url).toString()
   const upcomingPosterUrl = new URL('../data/images/Poster.webp', import.meta.url).toString()
   const brochureUrl = new URL('../data/brochures/brochure-2024.pdf', import.meta.url).toString()
+
+  // Preload above-the-fold assets for faster first paint on mobile.
+  const preloadImage = (src: string) => {
+    if (!src) return
+    const img = new Image()
+    img.decoding = 'async'
+    img.src = src
+  }
+
+  const slideshowPreloadUrls = [
+    new URL('../data/images/background-01.webp', import.meta.url).toString(),
+    new URL('../data/images/background-02.webp', import.meta.url).toString(),
+    new URL('../data/images/background-03.webp', import.meta.url).toString(),
+  ]
+
+  useEffect(() => {
+    preloadImage(logoUrl)
+    preloadImage(upcomingPosterUrl)
+    slideshowPreloadUrls.forEach(preloadImage)
+    // only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <MobileLayout>
@@ -241,34 +264,23 @@ export default function MobileHomePage({ BackgroundSlideshow }: Props) {
       <section className="px-4 mt-8">
         <div className="flex items-center justify-between mb-4 bg-black/40 backdrop-blur-sm rounded-xl py-2 px-3 border border-white/5 shadow-lg shadow-black/30">
           <h2 className="font-serif text-lg text-white drop-shadow-md">{pressAndReviewsSection.title}</h2>
-          <Link to="/previous-shows" className="text-sm text-[#ff6a1a] hover:text-[#ff8040] flex items-center gap-1 drop-shadow-md">
-            View all <ChevronRight className="w-4 h-4" />
-          </Link>
         </div>
 
-        {/* Show only first review on mobile, with "see more" */}
-        {pressAndReviewsSection.items.slice(0, 1).map((item) => (
-          <MobileReviewCard
-            key={item.id}
-            title={item.headline}
-            author={item.reviewer}
-            source={item.location}
-            date={item.eventDateText}
-            excerpt={item.summary}
-            linkUrl={item.link.href}
-            linkLabel={item.link.label}
-          />
-        ))}
-
-        {pressAndReviewsSection.items.length > 1 && (
-          <Link
-            to="/previous-shows"
-            className="flex items-center justify-center gap-2 mt-3 py-2 text-sm text-white/70 hover:text-white transition-colors"
-          >
-            <span>See {pressAndReviewsSection.items.length - 1} more reviews</span>
-            <ExternalLink className="w-4 h-4" />
-          </Link>
-        )}
+        {/* Render all reviews on mobile (no "See all" link) */}
+        <div className="space-y-4">
+          {pressAndReviewsSection.items.map((item) => (
+            <MobileReviewCard
+              key={item.id}
+              title={item.headline}
+              author={item.reviewer}
+              source={item.location}
+              date={item.eventDateText}
+              excerpt={item.summary}
+              linkUrl={item.link.href}
+              linkLabel={item.link.label}
+            />
+          ))}
+        </div>
       </section>
     </MobileLayout>
   )

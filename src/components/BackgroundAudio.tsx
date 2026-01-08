@@ -8,20 +8,35 @@ function clamp01(n: number) {
   return Math.min(1, Math.max(0, n))
 }
 
-// Check if we're on mobile (matching the useIsMobile hook breakpoint)
+// Check if we're on mobile (capability-based; avoids flipping on rotation)
 function useIsMobileView() {
   const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.innerWidth <= 640
+    if (typeof window === 'undefined' || !window.matchMedia) return false
+    const coarse = window.matchMedia('(pointer: coarse)').matches
+    const noHover = window.matchMedia('(hover: none)').matches
+    const touchPoints = (navigator.maxTouchPoints ?? 0) > 0
+    return coarse || (noHover && touchPoints)
   })
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    const mq = window.matchMedia('(max-width: 640px)')
-    const handler = () => setIsMobile(mq.matches)
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const mqCoarse = window.matchMedia('(pointer: coarse)')
+    const mqHoverNone = window.matchMedia('(hover: none)')
+
+    const handler = () => {
+      const coarse = mqCoarse.matches
+      const noHover = mqHoverNone.matches
+      const touchPoints = (navigator.maxTouchPoints ?? 0) > 0
+      setIsMobile(coarse || (noHover && touchPoints))
+    }
+
     handler()
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
+    mqCoarse.addEventListener('change', handler)
+    mqHoverNone.addEventListener('change', handler)
+    return () => {
+      mqCoarse.removeEventListener('change', handler)
+      mqHoverNone.removeEventListener('change', handler)
+    }
   }, [])
 
   return isMobile
