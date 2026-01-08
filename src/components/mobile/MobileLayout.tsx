@@ -207,12 +207,25 @@ export default function MobileLayout({
       <div className="min-h-screen bg-transparent">
         <header className="fixed top-0 left-0 right-0 z-40 mobile-safe-top">
           <div className="flex items-center justify-between px-4 py-3 bg-black/25 backdrop-blur-md border-b border-white/10">
-            <Link to="/" className="flex items-center gap-2">
-              <img src={mobileLogoUrl} alt="Prarambh" className="h-9 w-auto" loading="eager" />
+            <Link to="/" className="flex items-center gap-2" aria-label="Go to home">
+              <img
+                src={mobileLogoUrl}
+                alt="Prarambh"
+                className="h-9 w-auto"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
+              />
             </Link>
-            <div className="flex-1 text-center font-serif text-sm uppercase tracking-[0.18em] text-white/90">
+
+            <Link
+              to="/"
+              aria-label="Go to home"
+              className="flex-1 text-center font-serif text-sm uppercase tracking-[0.18em] text-white/90"
+            >
               Prarambh Theatre
-            </div>
+            </Link>
+
             <div className="w-[36px]" aria-hidden="true" />
           </div>
         </header>
