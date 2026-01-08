@@ -19,5 +19,5 @@ app.post('/api/donations', (req, res) => {
 })
 
 app.listen(8080, () => {
-  console.log('Mock backend listening on http://localhost:8080')
+  console.log('Mock backend listening on http://192.168.29.55:8080')
 })

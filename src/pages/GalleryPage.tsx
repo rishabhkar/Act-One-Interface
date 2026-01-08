@@ -4,6 +4,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { playGallerySections } from '../data/galleryImages'
+import { useGlassGradientFromImg } from '../lib/useGlassGradientFromImg'
+import MobileImagePreview from '../components/mobile/MobileImagePreview'
+import useIsMobile from '../lib/useIsMobile'
 
 function clampIndex(i: number, len: number) {
   if (len <= 0) return 0
@@ -23,14 +26,34 @@ function PlayGallerySection({
   isFirst?: boolean
 }) {
   const [index, setIndex] = useState(0)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const isMobile = useIsMobile(640)
   const active = images.length ? images[clampIndex(index, images.length)] : null
 
   const activeImgRef = useRef<HTMLImageElement | null>(null)
+  const gradient = useGlassGradientFromImg(activeImgRef, {
+    enabled: true,
+    cacheKey: active?.src ?? null,
+  })
+
+  const handleImageClick = () => {
+    if (isMobile && images.length > 0) {
+      setPreviewOpen(true)
+    }
+  }
 
   return (
     <SectionReveal>
       <div>
-        <GlassPanel className="p-4 sm:p-6 text-justify" labelledBy={`gallery-${title}`}>
+        <GlassPanel
+          className="p-4 sm:p-6 text-justify"
+          labelledBy={`gallery-${title}`}
+          style={
+            gradient
+              ? ({ ['--glass-gradient']: gradient } as React.CSSProperties)
+              : undefined
+          }
+        >
           <div className="flex flex-col gap-4">
             {/* Title + buttons */}
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -74,7 +97,10 @@ function PlayGallerySection({
               </p>
             )}
 
-            <div className="rounded-2xl border border-white/10 bg-black/30 p-3">
+            <div 
+              className={`rounded-2xl border border-white/10 bg-black/30 p-3 ${isMobile ? 'cursor-pointer' : ''}`}
+              onClick={handleImageClick}
+            >
               <div className="flex items-center justify-center">
                 {active ? (
                   <img
@@ -95,6 +121,9 @@ function PlayGallerySection({
                   <div className="py-12 text-sm text-white/60">No images in this section.</div>
                 )}
               </div>
+              {isMobile && images.length > 0 && (
+                <p className="text-center text-xs text-white/50 mt-2">Tap to view full screen</p>
+              )}
             </div>
 
             {images.length > 1 && (
@@ -128,6 +157,16 @@ function PlayGallerySection({
             )}
           </div>
         </GlassPanel>
+
+        {/* Mobile fullscreen preview */}
+        {isMobile && (
+          <MobileImagePreview
+            images={images}
+            initialIndex={clampIndex(index, images.length)}
+            isOpen={previewOpen}
+            onClose={() => setPreviewOpen(false)}
+          />
+        )}
       </div>
     </SectionReveal>
   )
@@ -154,7 +193,7 @@ export default function GalleryPage() {
         </header>
       </SectionReveal>
 
-      <section className="mt-8 pb-6">
+      <section className="mt-8 pb-20">
         <div className="grid gap-6">
           {sections.map((section, i) => (
             <PlayGallerySection

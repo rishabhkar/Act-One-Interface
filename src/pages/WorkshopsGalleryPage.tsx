@@ -3,6 +3,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { useGlassGradientFromImg } from '../lib/useGlassGradientFromImg'
+import MobileImagePreview from '../components/mobile/MobileImagePreview'
+import useIsMobile from '../lib/useIsMobile'
 import type { GalleryImage } from '../data/galleryImages'
 
 function clampIndex(i: number, len: number) {
@@ -27,6 +29,8 @@ const workshopsImages: GalleryImage[] = [
 
 export default function WorkshopsGalleryPage() {
   const [index, setIndex] = useState(0)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const isMobile = useIsMobile(640)
   const active = workshopsImages.length ? workshopsImages[clampIndex(index, workshopsImages.length)] : null
   const activeImgRef = useRef<HTMLImageElement | null>(null)
 
@@ -38,6 +42,12 @@ export default function WorkshopsGalleryPage() {
     () => ({ ['--glass-gradient']: glassGradient } as React.CSSProperties),
     [glassGradient],
   )
+
+  const handleImageClick = () => {
+    if (isMobile && workshopsImages.length > 0) {
+      setPreviewOpen(true)
+    }
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4">
@@ -93,7 +103,10 @@ export default function WorkshopsGalleryPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-black/30 p-3">
+            <div
+              className={`rounded-2xl border border-white/10 bg-black/30 p-3 ${isMobile ? 'cursor-pointer' : ''}`}
+              onClick={handleImageClick}
+            >
               <div className="flex items-center justify-center">
                 {active ? (
                   <img
@@ -107,6 +120,9 @@ export default function WorkshopsGalleryPage() {
                   <div className="py-12 text-sm text-white/60">No images in this section.</div>
                 )}
               </div>
+              {isMobile && workshopsImages.length > 0 && (
+                <p className="text-center text-xs text-white/50 mt-2">Tap to view full screen</p>
+              )}
             </div>
 
             {workshopsImages.length > 1 && (
@@ -133,7 +149,17 @@ export default function WorkshopsGalleryPage() {
         </GlassPanel>
       </SectionReveal>
 
-      <div className="h-10" />
+      {/* Mobile fullscreen preview */}
+      {isMobile && (
+        <MobileImagePreview
+          images={workshopsImages}
+          initialIndex={clampIndex(index, workshopsImages.length)}
+          isOpen={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
+
+      <div className="h-20" />
     </div>
   )
 }

@@ -5,9 +5,12 @@ import BackgroundAudio from './BackgroundAudio'
 import BackgroundLayers from './BackgroundLayers'
 import Footer from './Footer'
 import Navbar from './Navbar'
+import MobileLayout from './mobile/MobileLayout'
+import useIsMobile from '../lib/useIsMobile'
 
 export default function Layout({ children }: PropsWithChildren) {
   const location = useLocation()
+  const isMobile = useIsMobile(640)
 
   useEffect(() => {
     // If navigating to a fragment (hash) let the destination page handle scrolling to the anchor.
@@ -16,6 +19,19 @@ export default function Layout({ children }: PropsWithChildren) {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
   }, [location.pathname, location.hash])
 
+  // Use mobile layout for mobile devices (includes bottom nav and footer)
+  if (isMobile) {
+    return (
+      <MobileLayout>
+        <BackgroundLayers />
+        <BackgroundAudio volume={0.5} />
+        {children}
+        <Footer />
+      </MobileLayout>
+    )
+  }
+
+  // Desktop layout
   return (
     <div className="min-h-dvh">
       <BackgroundLayers />
