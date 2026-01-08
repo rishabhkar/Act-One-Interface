@@ -1,8 +1,7 @@
-const TICKET_PRICE_INR = 250
-
-function buildUpiParams(ticketCount: number, note = 'Prarambh Tickets') {
+function buildUpiParams(ticketCount: number, amountPerTicketInr: number, note = 'Prarambh Tickets') {
   const count = Number.isFinite(ticketCount) ? Math.max(1, Math.floor(ticketCount)) : 1
-  const amount = count * TICKET_PRICE_INR
+  const perTicket = Number.isFinite(amountPerTicketInr) && amountPerTicketInr > 0 ? amountPerTicketInr : 0
+  const amount = count * perTicket
   const params = new URLSearchParams({
     pa: 'prarambh.62803183@hdfcbank',
     pn: 'PRARAMBH',
@@ -28,6 +27,7 @@ function isMobile(ua = navigator.userAgent) {
 
 export type UpIOptions = {
   ticketCount: number
+  amountPerTicketInr: number
   note?: string
 }
 
@@ -49,13 +49,13 @@ const IOS_UPI_APP_CONFIG = [
   build: (params: string) => string
 }[]
 
-export function buildUpiUrl({ ticketCount, note = 'Prarambh Tickets' }: UpIOptions) {
-  const { params } = buildUpiParams(ticketCount, note)
+export function buildUpiUrl({ ticketCount, amountPerTicketInr, note = 'Prarambh Tickets' }: UpIOptions) {
+  const { params } = buildUpiParams(ticketCount, amountPerTicketInr, note)
   return `upi://pay?${params.toString()}`
 }
 
-export function buildUpiLinkUrl({ ticketCount, note = 'Prarambh Tickets' }: UpIOptions) {
-  const { params } = buildUpiParams(ticketCount, note)
+export function buildUpiLinkUrl({ ticketCount, amountPerTicketInr, note = 'Prarambh Tickets' }: UpIOptions) {
+  const { params } = buildUpiParams(ticketCount, amountPerTicketInr, note)
   return `https://upi.link/pay?${params.toString()}`
 }
 
@@ -67,7 +67,7 @@ function buildAndroidIntent(upiUrl: string, fallbackUrl: string) {
 }
 
 function buildIosAppLinks(opts: UpIOptions): IosUpiAppLink[] {
-  const { params } = buildUpiParams(opts.ticketCount, opts.note)
+  const { params } = buildUpiParams(opts.ticketCount, opts.amountPerTicketInr, opts.note)
   const paramString = params.toString()
   return IOS_UPI_APP_CONFIG.map((app) => ({
     id: app.id,

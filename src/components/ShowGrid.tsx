@@ -10,12 +10,12 @@ type FetchState =
   | { status: 'error' }
   | { status: 'ready'; data: Auditorium[] }
 
-export default function ShowGrid({ limit }: { limit?: number }) {
+export default function ShowGrid({ limit, compact }: { limit?: number; compact?: boolean }) {
   const [state, setState] = useState<FetchState>({ status: 'loading' })
 
   useEffect(() => {
     let cancelled = false
-    getAuditoriums()
+    getAuditoriums({ force: true })
       .then((data) => {
         if (!cancelled) setState({ status: 'ready', data })
       })
@@ -35,8 +35,9 @@ export default function ShowGrid({ limit }: { limit?: number }) {
   const rows = useMemo(() => data.map((a) => ({ show: buildShowCardData(a), auditorium: a })), [data])
 
   if (state.status === 'loading') {
+    const loadingClass = compact ? 'grid gap-4' : 'grid gap-6 md:grid-cols-2'
     return (
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className={loadingClass}>
         {[0, 1].map((i) => (
           <GlassPanel key={i} className="p-6 animate-pulse">
             <div className="h-5 w-1/2 rounded bg-white/10" />
@@ -71,8 +72,9 @@ export default function ShowGrid({ limit }: { limit?: number }) {
     )
   }
 
+  const gridClass = compact ? 'grid gap-4' : 'grid gap-6 md:grid-cols-2'
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className={gridClass}>
       {rows.map(({ show, auditorium }, idx) => (
         <SectionReveal key={show.id} delay={Math.min(idx * 0.06, 0.24)}>
           <ShowCard show={show} auditorium={auditorium} />

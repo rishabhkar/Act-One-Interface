@@ -8,6 +8,8 @@ import ShowGrid from '../components/ShowGrid'
 import { siteContent } from '../content/siteContent'
 import heroLogoGif from '../data/images/Logo Image.webp'
 import { guestActorProfiles, memberProfiles } from '../data/members'
+import MobileHomePage from './MobileHomePage'
+import useIsMobile from '../lib/useIsMobile'
 
 const brochure2024PdfUrl = new URL('../data/brochures/brochure-2024.pdf', import.meta.url).toString()
 const logoVideoUrl = new URL('/media/logo.webm', import.meta.url).toString()
@@ -277,30 +279,11 @@ export default function HomePage() {
 
   const upcomingPosterUrl = useMemo(() => new URL('../data/images/Poster.webp', import.meta.url).toString(), [])
   const allPeople = useMemo(() => [...memberProfiles, ...guestActorProfiles], [])
+  const isMobile = useIsMobile(640)
 
-  // Preload the first visible member thumbnails so they appear instantly on page load.
-  useEffect(() => {
-    if (typeof document === 'undefined') return
-    const toPreload = allPeople.slice(0, 12).map((p) => p.photoSrc).filter(Boolean)
-    const links: HTMLLinkElement[] = []
-    toPreload.forEach((href) => {
-      try {
-        const l = document.createElement('link')
-        l.rel = 'preload'
-        l.as = 'image'
-        l.href = href
-        // Use setAttribute to avoid TypeScript/ESLint "any" complaints.
-        l.setAttribute('fetchpriority', 'high')
-        document.head.appendChild(l)
-        links.push(l)
-      } catch {
-        // ignore failures silently
-      }
-    })
-    return () => {
-      links.forEach((l) => l.remove())
-    }
-  }, [allPeople])
+  if (isMobile) {
+    return <MobileHomePage BackgroundSlideshow={BackgroundSlideshow} />
+  }
 
   return (
     <div className="relative text-3d-shadow text-home-shadow">
@@ -405,7 +388,7 @@ export default function HomePage() {
         </SectionReveal>
 
         <SectionReveal>
-          <div className="mt-10">
+          <div className="mt-10 hidden sm:block">
             <GlassPanel
               as="article"
               className="p-6 md:p-8"

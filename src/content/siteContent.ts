@@ -103,15 +103,14 @@ export type SiteContent = {
     pageTitle: string
     intro: string
     contactDetails: {
-      address: 'Gaur City 1, Avenue 1, Gautam Buddha Nagar, Greater Noida West, Uttar Pradesh - 201318',
-      city: ''
-      email: 'prarambhtheatre@gmail.com',
-      phone: '+91-9310109669',
-      phone2: '+91-9818469935',
-      phone3: '+91-9818620738',
-      whatsapp: '[Optional TBD]'
-      mapEmbedUrl:
-        'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.5648848634232!2d77.42426929999999!3d28.6128274!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cef8952803847%3A0xeb592bc2ab8236fb!2s1st%20Avenue%2C%20GC1!5e0!3m2!1sen!2sin!4v1767012123516!5m2!1sen!2sin',
+      address: string
+      city: string
+      email: string
+      phone: string
+      phone2: string
+      phone3: string
+      whatsapp: string
+      mapEmbedUrl: string
     }
     social: Array<{ label: string; href: string }>
   }
@@ -213,7 +212,7 @@ export const siteContent: SiteContent = {
           dateText: 'Sunday, 8th February 2026 · 6:00 PM',
           venueText: 'Muktadhara Auditorium, Gole Market, New Delhi',
           priceText: '₹ 250 · 2 Hours 30 Mins',
-          ctaPrimary: { label: 'Book tickets', href: '/book?showId=show-1' },
+          ctaPrimary: { label: 'Book Seats', href: '/book?showId=show-1' },
           ctaSecondary: { label: 'View all', href: '/shows' },
         },
       ],
@@ -337,8 +336,8 @@ export const siteContent: SiteContent = {
     ],
   },
   bookingPage: {
-    pageTitle: 'Book tickets',
-    intro: 'Share your details, proceed to payment, then enter your transaction ID to confirm your seats.',
+    pageTitle: 'Book Seats',
+    intro: 'Share your details, proceed to payment, then enter your transaction ID to confirm your seats to get E-Invitation.',
     form: {
       submit: { label: 'Payment', apiEndpoint: '/api/tickets/issue' },
       successState: {
@@ -353,9 +352,9 @@ export const siteContent: SiteContent = {
     pageTitle: 'Contact',
     intro: 'Reach out for bookings, collaborations, workshops, and press.',
     contactDetails: {
-      address: 'Gaur City 1, Avenue 1, Gautam Buddha Nagar, Greater Noida West, Uttar Pradesh - 201318',
+      address: 'Gaur City 1, Avenue 1, Greater Noida West',
       city: '',
-      email: 'prarambhtheatre@gmail.com',
+      email: 'contact@act-one.co.uk',
       phone: '+91-9310109669',
       phone2: '+91-9818469935',
       phone3: '+91-9818620738',
@@ -375,7 +374,7 @@ export const siteContent: SiteContent = {
     },
     contact: {
       address: 'Gaur City 1, Avenue 1, Gautam Buddha Nagar, Greater Noida West, Uttar Pradesh - 201318',
-      email: 'prarambhtheatre@gmail.com',
+      email: 'contact@act-one.co.uk',
       phone: '+91-9310109669',
     },
     social: [

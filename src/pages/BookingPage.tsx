@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import { CheckCircle2, CreditCard, Loader2, ReceiptText, Ticket } from 'lucide-react'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
@@ -7,6 +7,8 @@ import { siteContent } from '../content/siteContent'
 import { issueTicket } from '../lib/api'
 import { launchUpiPayment, type IosUpiAppLink } from '../lib/upi'
 import { getAuditoriums, type Auditorium } from '../lib/auditoriums'
+import useIsMobile from '../lib/useIsMobile'
+import { MobileGlassCard } from '../components/mobile/MobileUIComponents'
 
 type FormState = {
   showId: string
@@ -52,6 +54,7 @@ function validateDetails(state: FormState): FieldErrors {
 }
 
 export default function BookingPage() {
+  const isMobile = useIsMobile(640)
   const [params] = useSearchParams()
   const preselectedShow = params.get('showId') ?? ''
   const preselectedAuditoriumId = params.get('auditoriumId') ?? ''
@@ -158,7 +161,9 @@ export default function BookingPage() {
     setStep('transaction')
 
     try {
-      const launch = await launchUpiPayment({ ticketCount: form.ticketCount })
+      // In goToTransactionStep, pass the real per-ticket amount.
+      const perTicketAmount = selectedAuditorium?.ticketAmount ?? 0
+      const launch = await launchUpiPayment({ ticketCount: form.ticketCount, amountPerTicketInr: perTicketAmount })
 
       if (launch.status === 'manual_selection_required') {
         setIosAppOptions(launch.apps)
@@ -234,7 +239,16 @@ export default function BookingPage() {
       void res
       setSubmit({ status: 'success' })
 
-      // Reset back to the main form so the user can book again.
+      // Refresh auditorium data to get updated seat counts immediately.
+      // This MUST NOT be cached: always call the API again.
+      try {
+        const refreshed = await getAuditoriums({ force: true })
+        setAuditoriums(refreshed)
+      } catch (refreshErr) {
+        console.error('Failed to refresh auditorium data:', refreshErr)
+      }
+
+      // Keep success message visible; reset the form state after a short delay to avoid jarring UX.
       setTransactionId('')
       setStep('details')
       setErrors({})
@@ -273,19 +287,282 @@ export default function BookingPage() {
     [],
   )
 
+  // Mobile UI (safe, simplified). Desktop continues to render the existing layout below.
+  if (isMobile) {
+    return (
+      <div className="px-4">
+        <header className="pt-6">
+          <h1 className="font-serif text-2xl text-white">{siteContent.bookingPage.pageTitle}</h1>
+          <p
+            className="mt-2 text-[0.95rem] font-semibold text-cyan-100"
+            style={{
+              textShadow:
+                '0 0 18px rgba(34,211,238,0.55), 0 0 32px rgba(59,130,246,0.35), 0 6px 22px rgba(0,0,0,0.95)',
+            }}
+          >
+            For development of Bengali Theare in NCR, Donate and Join hands with Prarambh
+          </p>
+          <p className="mt-2 text-white/70 whitespace-nowrap overflow-x-auto">
+            {siteContent.bookingPage.intro}
+          </p>
+        </header>
+
+        <section className="mt-5 space-y-4">
+          <MobileGlassCard>
+            <div className="flex items-end justify-between">
+              <h2 className="font-serif text-lg text-white">{step === 'details' ? 'Your details' : 'Confirm booking'}</h2>
+              <div className="text-[11px] text-white/55">Step {step === 'details' ? '1' : '2'} of 2</div>
+            </div>
+
+            {submit.status === 'success' && (
+              <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+                <div className="flex items-center gap-2 font-semibold">
+                  <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                  Booking Successful
+                </div>
+                <div className="mt-1 text-emerald-100/90">
+                  Booking confirmation will be sent with tickets on email within next 48 hours. If you do not receive the email within 48 hours, please contact us at prarambhtheatre@gmail.com.
+                </div>
+              </div>
+            )}
+
+            {submit.status === 'error' && (
+              <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+                <div className="font-semibold">{siteContent.bookingPage.form.errorState.title}</div>
+                <div className="mt-1 text-red-100/90">{submit.message}</div>
+              </div>
+            )}
+
+            {isSoldOut ? (
+              <div className="mt-4 rounded-2xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                <div className="font-semibold">Sold out</div>
+                <div className="mt-1 text-amber-100/90">This show has no available seats. Booking is closed.</div>
+              </div>
+            ) : null}
+
+            {step === 'details' ? (
+              <form className="mt-4 space-y-4" onSubmit={goToTransactionStep} noValidate>
+                <div>
+                  <label className="label" htmlFor="ticketCount-mobile">Number of tickets (1–10)</label>
+                  <input
+                    id="ticketCount-mobile"
+                    className="field mt-2"
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={form.ticketCount}
+                    onChange={(e) => {
+                      const raw = e.target.value
+                      const trimmed = raw.replace(/^0+(?=\d)/, '')
+                      const n = Number(trimmed)
+                      setForm((s) => ({ ...s, ticketCount: Number.isFinite(n) ? n : 1 }))
+                    }}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="label" htmlFor="fullName-mobile">Full name</label>
+                  <input
+                    id="fullName-mobile"
+                    className="field mt-2"
+                    autoComplete="name"
+                    value={form.fullName}
+                    onChange={(e) => setForm((s) => ({ ...s, fullName: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="label" htmlFor="email-mobile">Email address</label>
+                  <input
+                    id="email-mobile"
+                    className="field mt-2"
+                    type="email"
+                    autoComplete="email"
+                    value={form.email}
+                    onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="label" htmlFor="phoneNumber-mobile">WhatsApp number</label>
+                  <div className="mt-2 flex rounded-xl border border-white/15 bg-white/5 overflow-hidden">
+                    <div className="flex items-center px-3 text-sm text-white/45 select-none border-r border-white/10">+91</div>
+                    <input
+                      id="phoneNumber-mobile"
+                      className="field !mt-0 flex-1 !border-0 !bg-transparent"
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel"
+                      maxLength={10}
+                      value={form.phoneNumber}
+                      onChange={(e) => {
+                        const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10)
+                        setForm((s) => ({ ...s, phoneNumber: digitsOnly }))
+                      }}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <input
+                    id="consent-mobile"
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 rounded border-white/20 bg-white/10"
+                    checked={form.consent}
+                    onChange={(e) => setForm((s) => ({ ...s, consent: e.target.checked }))}
+                  />
+                  <label className="text-sm text-white/85" htmlFor="consent-mobile">
+                    I agree to receive booking updates
+                  </label>
+                </div>
+
+                <button type="submit" className="btn-primary w-full" disabled={isSoldOut}>
+                  <CreditCard className="h-4 w-4" aria-hidden="true" />
+                  {isSoldOut ? 'Sold out' : 'Payment'}
+                </button>
+
+                <p className="text-xs text-white/55 whitespace-nowrap w-full max-w-none overflow-x-auto">
+                  Share your details, proceed to payment, then enter your transaction ID to confirm your seats.
+                </p>
+              </form>
+            ) : (
+              <form className="mt-4 space-y-4" onSubmit={confirmBooking}>
+                <div className={(forceQrFallback ? 'block' : 'hidden') + ' rounded-2xl border border-white/10 bg-white/5 p-4'}>
+                  <div className="text-sm font-semibold text-white">Pay via QR</div>
+                  <div className="mt-2 text-xs text-white/60">Scan and pay ₹ {amountPayable}.</div>
+                  <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/20 p-3">
+                    <img
+                      src={new URL('../data/payments/QR Code.webp', import.meta.url).toString()}
+                      alt="Prarambh UPI QR code"
+                      className="h-auto w-full"
+                      decoding="async"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label" htmlFor="transactionId-mobile">Transaction ID</label>
+                  <input
+                    id="transactionId-mobile"
+                    className="field mt-2"
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    placeholder="UPI/IMPS/bank reference"
+                    disabled={submit.status === 'loading' || submit.status === 'success'}
+                  />
+                </div>
+
+                {/* Mobile transaction step: show iOS app options when present */}
+                {iosAppOptions.length > 0 && (
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <div className="text-sm font-semibold text-white">Open payment in your UPI app</div>
+                    <div className="mt-1 text-xs text-white/60">Tap your preferred app to continue and pay ₹ {amountPayable}.</div>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {iosAppOptions.map((app) => (
+                        <button
+                          key={app.id}
+                          type="button"
+                          className="rounded-xl border border-white/15 bg-white/10 px-3 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
+                          onClick={() => {
+                            window.location.href = app.href
+                          }}
+                        >
+                          {app.label}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-secondary w-full mt-3"
+                      onClick={() => setForceQrFallback(true)}
+                    >
+                      Show QR instead
+                    </button>
+                  </div>
+                )}
+
+                <button type="submit" className="btn-primary w-full" disabled={isSoldOut || submit.status === 'loading' || submit.status === 'success'}>
+                  {submit.status === 'loading' ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                      Confirming…
+                    </>
+                  ) : (
+                    <>
+                      <ReceiptText className="h-4 w-4" aria-hidden="true" />
+                      Confirm booking
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-secondary w-full"
+                  disabled={submit.status === 'loading'}
+                  onClick={() => {
+                    setSubmit({ status: 'idle' })
+                    setStep('details')
+                    setForceQrFallback(false)
+                    setIosAppOptions([])
+                  }}
+                >
+                  Back
+                </button>
+              </form>
+            )}
+          </MobileGlassCard>
+
+          <MobileGlassCard>
+            <h2 className="font-serif text-lg text-white">Summary</h2>
+            <div className="mt-3 space-y-2 text-sm text-white/75">
+              <div className="flex items-start justify-between gap-3">
+                <div className="text-white/60">Show</div>
+                <div className="text-right text-white">{selectedAuditorium ? selectedAuditorium.showName : '—'}</div>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="text-white/60">Seats</div>
+                <div className="text-right">
+                  <span className={(selectedAuditorium?.availableSeats ?? 0) <= 0 ? 'text-red-300 font-semibold' : 'text-emerald-300 font-semibold'}>
+                    {selectedAuditorium?.availableSeats ?? '—'}
+                  </span>
+                  <span className="text-white/70"> / </span>
+                  <span className="text-white">{selectedAuditorium?.totalSeats ?? '—'}</span>
+                </div>
+              </div>
+              <div className="mt-3 text-xs text-white/55">
+                Tickets are issued after transaction ID submission.
+              </div>
+              <Link to="/shows" className="mt-3 inline-block text-sm text-[#ff6a1a]">Back to shows</Link>
+            </div>
+          </MobileGlassCard>
+        </section>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4">
       <SectionReveal>
         <header className="pt-8 sm:pt-10">
           <h1 className="font-serif text-4xl text-white sm:text-5xl">{siteContent.bookingPage.pageTitle}</h1>
-          <p className="mt-3 max-w-prose text-white/70">{siteContent.bookingPage.intro}</p>
-          {selectedAuditorium ? (
-            <p className="mt-4 text-sm text-white/70">
-              Booking for <span className="font-semibold text-white">{selectedAuditorium.showName}</span> ·{' '}
-              <span className="text-white">{formattedWhen}</span> ·{' '}
-              <span className="text-white">{selectedAuditorium.auditoriumName}</span>
-            </p>
-          ) : null}
+
+          <p
+            className="mt-3 text-base font-semibold text-cyan-100"
+            style={{
+              textShadow:
+                '0 0 18px rgba(34,211,238,0.55), 0 0 32px rgba(59,130,246,0.35), 0 6px 22px rgba(0,0,0,0.95)',
+            }}
+          >
+            For development of Bengali Theare in NCR, Donate and Join hands with Prarambh
+          </p>
+
+          <p className="mt-2 text-white/70 whitespace-nowrap overflow-hidden text-ellipsis">
+            {siteContent.bookingPage.intro}
+          </p>
         </header>
       </SectionReveal>
 
@@ -311,10 +588,10 @@ export default function BookingPage() {
                 >
                   <div className="flex items-center gap-2 font-semibold">
                     <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                    Transaction recorded
+                    Booking Successful
                   </div>
                   <div className="mt-1 text-emerald-100/90">
-                    Transaction recorded. Tickets will be issued after manual approval. You will receive the tickets over the registered email within 48 hours.
+                    Booking confirmation will be sent with tickets on email within next 48 hours. If you do not receive the email within 48 hours, please contact us at prarambhtheatre@gmail.com.
                   </div>
                 </div>
               )}
@@ -502,7 +779,7 @@ export default function BookingPage() {
                   </div>
 
                   <p className="text-xs text-white/55 whitespace-nowrap w-full max-w-none overflow-x-auto">
-                    Share your details, proceed to payment, then enter your transaction ID to confirm your seats.
+                    Share your details, proceed to payment, then enter your transaction ID to confirm your seats to get E-Invitation.
                   </p>
                 </form>
               ) : (

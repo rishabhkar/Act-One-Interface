@@ -8,6 +8,25 @@ function clamp01(n: number) {
   return Math.min(1, Math.max(0, n))
 }
 
+// Check if we're on mobile (matching the useIsMobile hook breakpoint)
+function useIsMobileView() {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth <= 640
+  })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(max-width: 640px)')
+    const handler = () => setIsMobile(mq.matches)
+    handler()
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  return isMobile
+}
+
 // Looping background audio with a subtle fade-out/fade-in around the loop boundary.
 export function BackgroundAudio({ volume = 0.5 }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -15,6 +34,7 @@ export function BackgroundAudio({ volume = 0.5 }: Props) {
   const [enabled, setEnabled] = useState(true)
   const [busy, setBusy] = useState(false)
   const vol = useMemo(() => clamp01(volume), [volume])
+  const isMobile = useIsMobileView()
 
   useEffect(() => {
     const audio = audioRef.current
@@ -50,6 +70,22 @@ export function BackgroundAudio({ volume = 0.5 }: Props) {
       cancelled = true
     }
   }, [enabled, vol])
+
+  // Listen for custom event from mobile nav to toggle music
+  useEffect(() => {
+    const handleToggle = (e: CustomEvent<{ enabled: boolean }>) => {
+      setEnabled(e.detail.enabled)
+    }
+    window.addEventListener('toggleBackgroundMusic' as never, handleToggle as never)
+    return () => {
+      window.removeEventListener('toggleBackgroundMusic' as never, handleToggle as never)
+    }
+  }, [])
+
+  // Broadcast current state for mobile nav to read
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('backgroundMusicState', { detail: { enabled } }))
+  }, [enabled])
 
   const enableMusic = async () => {
     const audio = audioRef.current
@@ -92,6 +128,17 @@ export function BackgroundAudio({ volume = 0.5 }: Props) {
 
     setEnabled(false)
     setBusy(false)
+  }
+
+  // On mobile, hide the floating button (sound control is in the mobile nav)
+  if (isMobile) {
+    return (
+      <audio
+        ref={audioRef}
+        src={new URL('../data/sound/Background Score.mp3', import.meta.url).toString()}
+        preload="auto"
+      />
+    )
   }
 
   return (
