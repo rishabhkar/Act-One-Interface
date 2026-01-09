@@ -13,6 +13,17 @@ function buildUpiParams(ticketCount: number, amountPerTicketInr: number, note = 
   return { amount, params }
 }
 
+// URLSearchParams serialises spaces as '+'. Some UPI intent handlers are picky about this.
+// We keep values conservative and encode spaces as '%20' for maximum compatibility.
+function toUpiQueryString(input: Record<string, string | undefined>) {
+  const pairs: string[] = []
+  for (const [key, value] of Object.entries(input)) {
+    if (value == null || value === '') continue
+    pairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+  }
+  return pairs.join('&')
+}
+
 function isAndroid(ua = navigator.userAgent) {
   return /Android/i.test(ua)
 }
@@ -50,20 +61,27 @@ const IOS_UPI_APP_CONFIG = [
 }[]
 
 export function buildUpiUrl({ ticketCount, amountPerTicketInr, note = 'Prarambh Tickets' }: UpIOptions) {
-  const { params } = buildUpiParams(ticketCount, amountPerTicketInr, note)
-  return `upi://pay?${params.toString()}`
+  const { amount } = buildUpiParams(ticketCount, amountPerTicketInr, note)
+  const query = toUpiQueryString({
+    pa: 'prarambh.62803183@hdfcbank',
+    pn: 'PRARAMBH',
+    cu: 'INR',
+    am: amount.toFixed(2),
+    // Keep tn optional and conservative; we’ll omit it for native launches.
+  })
+  return `upi://pay?${query}`
 }
 
 export function buildUpiLinkUrl({ ticketCount, amountPerTicketInr, note = 'Prarambh Tickets' }: UpIOptions) {
-  const { params } = buildUpiParams(ticketCount, amountPerTicketInr, note)
-  return `https://upi.link/pay?${params.toString()}`
-}
-
-function buildAndroidIntent(upiUrl: string, fallbackUrl: string) {
-  // Many Android browsers handle intent:// more reliably than upi://. Including a browser fallback prevents blank tabs.
-  const noScheme = upiUrl.replace(/^upi:\/\//, '')
-  const encodedFallback = encodeURIComponent(fallbackUrl)
-  return `intent://${noScheme}#Intent;scheme=upi;S.browser_fallback_url=${encodedFallback};end`
+  const { amount } = buildUpiParams(ticketCount, amountPerTicketInr, note)
+  const query = toUpiQueryString({
+    pa: 'prarambh.62803183@hdfcbank',
+    pn: 'PRARAMBH',
+    cu: 'INR',
+    am: amount.toFixed(2),
+    tn: note,
+  })
+  return `https://upi.link/pay?${query}`
 }
 
 function buildIosAppLinks(opts: UpIOptions): IosUpiAppLink[] {
@@ -80,7 +98,7 @@ export type LaunchUpiResult =
   | { status: 'launched'; via: 'native' | 'weblink' }
   | { status: 'failed'; reason: 'timeout' }
   | { status: 'not_supported'; reason: 'desktop_or_unknown' }
-  | { status: 'manual_selection_required'; reason: 'ios_app_selection'; apps: IosUpiAppLink[] }
+  | { status: 'manual_selection_required'; reason: 'app_selection'; apps: IosUpiAppLink[] }
 
 export function launchUpiPayment(opts: UpIOptions): Promise<LaunchUpiResult> {
   if (typeof window === 'undefined') {
@@ -91,22 +109,12 @@ export function launchUpiPayment(opts: UpIOptions): Promise<LaunchUpiResult> {
     return Promise.resolve({ status: 'not_supported', reason: 'desktop_or_unknown' })
   }
 
-  const upiUrl = buildUpiUrl(opts)
-  const fallbackUrl = buildUpiLinkUrl(opts)
-
-  if (isAndroid()) {
-    window.location.href = buildAndroidIntent(upiUrl, fallbackUrl)
-    return Promise.resolve({ status: 'launched', via: 'native' })
-  }
-
-  if (isIOS()) {
-    return Promise.resolve({
-      status: 'manual_selection_required',
-      reason: 'ios_app_selection',
-      apps: buildIosAppLinks(opts),
-    })
-  }
-
-  window.location.href = upiUrl
-  return Promise.resolve({ status: 'launched', via: 'native' })
+  // For BOTH Android and iOS, show app selection + QR fallback.
+  // This avoids the "blocked VPA" error from deep-link parsing issues
+  // and gives users the option to scan QR instead.
+  return Promise.resolve({
+    status: 'manual_selection_required',
+    reason: 'app_selection',
+    apps: buildIosAppLinks(opts),
+  })
 }

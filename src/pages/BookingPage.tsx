@@ -5,7 +5,6 @@ import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
 import { siteContent } from '../content/siteContent'
 import { issueTicket } from '../lib/api'
-import { launchUpiPayment, type IosUpiAppLink } from '../lib/upi'
 import { getAuditoriums, type Auditorium } from '../lib/auditoriums'
 import useIsMobile from '../lib/useIsMobile'
 import { MobileGlassCard } from '../components/mobile/MobileUIComponents'
@@ -104,8 +103,6 @@ export default function BookingPage() {
   const [errors, setErrors] = useState<FieldErrors>({})
   const [submit, setSubmit] = useState<SubmitState>({ status: 'idle' })
   const [transactionId, setTransactionId] = useState('')
-  const [forceQrFallback, setForceQrFallback] = useState(false)
-  const [iosAppOptions, setIosAppOptions] = useState<IosUpiAppLink[]>([])
   const formSectionRef = useRef<HTMLDivElement | null>(null)
 
   // Sync form when selected auditorium resolves
@@ -135,8 +132,6 @@ export default function BookingPage() {
   async function goToTransactionStep(e: React.FormEvent) {
     e.preventDefault()
     setSubmit({ status: 'idle' })
-    setForceQrFallback(false)
-    setIosAppOptions([])
 
     if (isSoldOut) {
       setSubmit({ status: 'error', message: 'This show is sold out. Booking is closed.' })
@@ -158,38 +153,8 @@ export default function BookingPage() {
       return
     }
 
+    // Mobile: QR-only flow. No UPI app deep-linking.
     setStep('transaction')
-
-    try {
-      // In goToTransactionStep, pass the real per-ticket amount.
-      const perTicketAmount = selectedAuditorium?.ticketAmount ?? 0
-      const launch = await launchUpiPayment({ ticketCount: form.ticketCount, amountPerTicketInr: perTicketAmount })
-
-      if (launch.status === 'manual_selection_required') {
-        setIosAppOptions(launch.apps)
-        setSubmit({
-          status: 'error',
-          message: 'Choose your preferred UPI app below to continue payment on iOS.',
-        })
-      } else if (launch.status === 'not_supported') {
-        setForceQrFallback(true)
-        setSubmit({
-          status: 'error',
-          message:
-            'This payment link opens only on a phone with a UPI app. Scan the QR below or reopen this page on your phone to continue.',
-        })
-      } else if (launch.status === 'failed') {
-        setSubmit({
-          status: 'error',
-          message: 'We could not open your UPI app. Try Payment again or scan the QR below to pay.',
-        })
-      }
-    } catch {
-      setSubmit({
-        status: 'error',
-        message: 'Something interrupted the UPI launch. Please try again or scan the QR below.',
-      })
-    }
   }
 
   async function confirmBooking(e: React.FormEvent) {
@@ -239,6 +204,17 @@ export default function BookingPage() {
       void res
       setSubmit({ status: 'success' })
 
+      // Ensure the success banner is visible immediately after booking.
+      // We scroll only on success (not on every step change), and we do it on the next frame
+      // so the success UI has rendered.
+      requestAnimationFrame(() => {
+        if (formSectionRef.current) {
+          formSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+      })
+
       // Refresh auditorium data to get updated seat counts immediately.
       // This MUST NOT be cached: always call the API again.
       try {
@@ -253,8 +229,6 @@ export default function BookingPage() {
       setStep('details')
       setErrors({})
       setForm(initial)
-      setForceQrFallback(false)
-      setIosAppOptions([])
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong.'
       setSubmit({ status: 'error', message })
@@ -302,9 +276,7 @@ export default function BookingPage() {
           >
             For development of Bengali Theare in NCR, Donate and Join hands with Prarambh
           </p>
-          <p className="mt-2 text-white/70 whitespace-nowrap overflow-x-auto">
-            {siteContent.bookingPage.intro}
-          </p>
+          <p className="mt-2 text-white/70 whitespace-nowrap overflow-x-auto">{siteContent.bookingPage.intro}</p>
         </header>
 
         <section className="mt-5 space-y-4">
@@ -321,7 +293,8 @@ export default function BookingPage() {
                   Booking Successful
                 </div>
                 <div className="mt-1 text-emerald-100/90">
-                  Booking confirmation will be sent with tickets on email within next 48 hours. If you do not receive the email within 48 hours, please contact us at prarambhtheatre@gmail.com.
+                  Booking confirmation will be sent with tickets on email within next 48 hours. If you do not receive the
+                  email, please contact us using the number or email provided on the contact page.
                 </div>
               </div>
             )}
@@ -343,7 +316,9 @@ export default function BookingPage() {
             {step === 'details' ? (
               <form className="mt-4 space-y-4" onSubmit={goToTransactionStep} noValidate>
                 <div>
-                  <label className="label" htmlFor="ticketCount-mobile">Number of tickets (1–10)</label>
+                  <label className="label" htmlFor="ticketCount-mobile">
+                    Number of tickets (1–10)
+                  </label>
                   <input
                     id="ticketCount-mobile"
                     className="field mt-2"
@@ -362,7 +337,9 @@ export default function BookingPage() {
                 </div>
 
                 <div>
-                  <label className="label" htmlFor="fullName-mobile">Full name</label>
+                  <label className="label" htmlFor="fullName-mobile">
+                    Full name
+                  </label>
                   <input
                     id="fullName-mobile"
                     className="field mt-2"
@@ -374,7 +351,9 @@ export default function BookingPage() {
                 </div>
 
                 <div>
-                  <label className="label" htmlFor="email-mobile">Email address</label>
+                  <label className="label" htmlFor="email-mobile">
+                    Email address
+                  </label>
                   <input
                     id="email-mobile"
                     className="field mt-2"
@@ -387,9 +366,13 @@ export default function BookingPage() {
                 </div>
 
                 <div>
-                  <label className="label" htmlFor="phoneNumber-mobile">WhatsApp number</label>
-                  <div className="mt-2 flex rounded-xl border border-white/15 bg-white/5 overflow-hidden">
-                    <div className="flex items-center px-3 text-sm text-white/45 select-none border-r border-white/10">+91</div>
+                  <label className="label" htmlFor="phoneNumber-mobile">
+                    WhatsApp number
+                  </label>
+                  <div className="mt-2 flex overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                    <div className="flex select-none items-center border-r border-white/10 px-3 text-sm text-white/45">
+                      +91
+                    </div>
                     <input
                       id="phoneNumber-mobile"
                       className="field !mt-0 flex-1 !border-0 !bg-transparent"
@@ -422,18 +405,19 @@ export default function BookingPage() {
 
                 <button type="submit" className="btn-primary w-full" disabled={isSoldOut}>
                   <CreditCard className="h-4 w-4" aria-hidden="true" />
-                  {isSoldOut ? 'Sold out' : 'Payment'}
+                  {isSoldOut ? 'Sold out' : 'Proceed to payment'}
                 </button>
 
-                <p className="text-xs text-white/55 whitespace-nowrap w-full max-w-none overflow-x-auto">
+                <p className="w-full max-w-none overflow-x-auto whitespace-nowrap text-xs text-white/55">
                   Share your details, proceed to payment, then enter your transaction ID to confirm your seats.
                 </p>
               </form>
             ) : (
               <form className="mt-4 space-y-4" onSubmit={confirmBooking}>
-                <div className={(forceQrFallback ? 'block' : 'hidden') + ' rounded-2xl border border-white/10 bg-white/5 p-4'}>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="text-sm font-semibold text-white">Pay via QR</div>
-                  <div className="mt-2 text-xs text-white/60">Scan and pay ₹ {amountPayable}.</div>
+                  <div className="mt-1 text-xs text-white/60">Amount payable: ₹ {amountPayable}</div>
+
                   <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/20 p-3">
                     <img
                       src={new URL('../data/payments/QR Code.webp', import.meta.url).toString()}
@@ -442,50 +426,52 @@ export default function BookingPage() {
                       decoding="async"
                     />
                   </div>
+
+                  <div className="mt-3 rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-xs text-white/75">
+                    <div className="font-semibold text-white">How to pay (Mobile)</div>
+                    <ol className="mt-2 list-decimal space-y-1 pl-4">
+                      <li>
+                        <span className="font-semibold">Please save this QR code</span> in your phone gallery, or scan it
+                        using another phone for payment.
+                      </li>
+                      <li>Open your UPI app (PhonePe / GPay / Paytm / BHIM).</li>
+                      <li>Use “Scan QR” and select the saved image (or scan from another phone).</li>
+                      <li>Pay the exact amount shown above.</li>
+                    </ol>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="text-sm font-semibold text-white">After payment</div>
+                  <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-white/70">
+                    <li>Copy the transaction reference/UTR/UPI transaction ID from your UPI app.</li>
+                    <li>Paste it below and tap “Confirm booking”.</li>
+                    <li>
+                      Booking confirmation will be emailed within 48 hours. If you don’t receive it, contact us at{' '}
+                      <span className="font-semibold text-white">prarambh.theatre.group@gmail.com</span>.
+                    </li>
+                  </ol>
                 </div>
 
                 <div>
-                  <label className="label" htmlFor="transactionId-mobile">Transaction ID</label>
+                  <label className="label" htmlFor="transactionId-mobile">
+                    Transaction ID
+                  </label>
                   <input
                     id="transactionId-mobile"
                     className="field mt-2"
                     value={transactionId}
                     onChange={(e) => setTransactionId(e.target.value)}
-                    placeholder="UPI/IMPS/bank reference"
+                    placeholder="UPI/UTR/reference number"
                     disabled={submit.status === 'loading' || submit.status === 'success'}
                   />
                 </div>
 
-                {/* Mobile transaction step: show iOS app options when present */}
-                {iosAppOptions.length > 0 && (
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <div className="text-sm font-semibold text-white">Open payment in your UPI app</div>
-                    <div className="mt-1 text-xs text-white/60">Tap your preferred app to continue and pay ₹ {amountPayable}.</div>
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      {iosAppOptions.map((app) => (
-                        <button
-                          key={app.id}
-                          type="button"
-                          className="rounded-xl border border-white/15 bg-white/10 px-3 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
-                          onClick={() => {
-                            window.location.href = app.href
-                          }}
-                        >
-                          {app.label}
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      className="btn-secondary w-full mt-3"
-                      onClick={() => setForceQrFallback(true)}
-                    >
-                      Show QR instead
-                    </button>
-                  </div>
-                )}
-
-                <button type="submit" className="btn-primary w-full" disabled={isSoldOut || submit.status === 'loading' || submit.status === 'success'}>
+                <button
+                  type="submit"
+                  className="btn-primary w-full"
+                  disabled={isSoldOut || submit.status === 'loading' || submit.status === 'success'}
+                >
                   {submit.status === 'loading' ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -506,8 +492,6 @@ export default function BookingPage() {
                   onClick={() => {
                     setSubmit({ status: 'idle' })
                     setStep('details')
-                    setForceQrFallback(false)
-                    setIosAppOptions([])
                   }}
                 >
                   Back
@@ -526,17 +510,23 @@ export default function BookingPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="text-white/60">Seats</div>
                 <div className="text-right">
-                  <span className={(selectedAuditorium?.availableSeats ?? 0) <= 0 ? 'text-red-300 font-semibold' : 'text-emerald-300 font-semibold'}>
+                  <span
+                    className={
+                      (selectedAuditorium?.availableSeats ?? 0) <= 0
+                        ? 'font-semibold text-red-300'
+                        : 'font-semibold text-emerald-300'
+                    }
+                  >
                     {selectedAuditorium?.availableSeats ?? '—'}
                   </span>
                   <span className="text-white/70"> / </span>
                   <span className="text-white">{selectedAuditorium?.totalSeats ?? '—'}</span>
                 </div>
               </div>
-              <div className="mt-3 text-xs text-white/55">
-                Tickets are issued after transaction ID submission.
-              </div>
-              <Link to="/shows" className="mt-3 inline-block text-sm text-[#ff6a1a]">Back to shows</Link>
+              <div className="mt-3 text-xs text-white/55">Tickets are issued after transaction ID submission.</div>
+              <Link to="/shows" className="mt-3 inline-block text-sm text-[#ff6a1a]">
+                Back to shows
+              </Link>
             </div>
           </MobileGlassCard>
         </section>
@@ -591,7 +581,7 @@ export default function BookingPage() {
                     Booking Successful
                   </div>
                   <div className="mt-1 text-emerald-100/90">
-                    Booking confirmation will be sent with tickets on email within next 48 hours. If you do not receive the email within 48 hours, please contact us at prarambhtheatre@gmail.com.
+                    Booking confirmation will be sent with tickets on email within next 48 hours. If you do not receive the email, please contact us using the number or email provided on the contact page.
                   </div>
                 </div>
               )}
@@ -770,8 +760,6 @@ export default function BookingPage() {
                         setTransactionId('')
                         setStep('details')
                         setSubmit({ status: 'idle' })
-                        setForceQrFallback(false)
-                        setIosAppOptions([])
                       }}
                     >
                       Reset
@@ -784,34 +772,8 @@ export default function BookingPage() {
                 </form>
               ) : (
                 <form className="mt-6 space-y-5" onSubmit={confirmBooking}>
-                  {iosAppOptions.length > 0 && (
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                      <div className="text-sm font-semibold text-white">Open payment in your UPI app</div>
-                      <div className="mt-1 text-xs text-white/60">
-                        iOS needs a direct link. Tap the app you use to switch over and finish the payment.
-                      </div>
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        {iosAppOptions.map((app) => (
-                          <button
-                            key={app.id}
-                            type="button"
-                            className="rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
-                            onClick={() => {
-                              window.location.href = app.href
-                            }}
-                          >
-                            {app.label}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="mt-3 text-xs text-white/60">
-                        Nothing happening? Use the QR below or copy the browser option to share the link manually.
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Desktop-only QR fallback (keeps user on-site; no blank tab). */}
-                  <div className={(forceQrFallback ? 'block' : 'hidden md:block') + ' rounded-2xl border border-white/10 bg-white/5 p-4'}>
+                  {/* QR-only payment (no UPI app deep-linking). */}
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="min-w-0">
                         <div className="text-sm font-semibold text-white">Pay via QR</div>
@@ -836,6 +798,15 @@ export default function BookingPage() {
                           />
                         </div>
                       </div>
+                    </div>
+
+                    <div className="mt-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-white/70">
+                      <div className="font-semibold text-white">After payment</div>
+                      <ol className="mt-2 list-decimal space-y-1 pl-4">
+                        <li>Pay the exact amount shown above.</li>
+                        <li>Copy the transaction reference/UTR/UPI transaction ID from your UPI app.</li>
+                        <li>Paste it below and click “Confirm booking”.</li>
+                      </ol>
                     </div>
                   </div>
 
@@ -882,8 +853,6 @@ export default function BookingPage() {
                       onClick={() => {
                         setSubmit({ status: 'idle' })
                         setStep('details')
-                        setForceQrFallback(false)
-                        setIosAppOptions([])
                       }}
                     >
                       Back
@@ -927,9 +896,7 @@ export default function BookingPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="text-white/60">Seats</div>
                   <div className="text-right">
-                    <span
-                      className={(selectedAuditorium.availableSeats ?? 0) <= 0 ? 'text-red-300 font-semibold' : 'text-emerald-300 font-semibold'}
-                    >
+                    <span className={(selectedAuditorium.availableSeats ?? 0) <= 0 ? 'text-red-300 font-semibold' : 'text-emerald-300 font-semibold'}>
                       {selectedAuditorium.availableSeats}
                     </span>
                     <span className="text-white/70"> / </span>
@@ -949,7 +916,7 @@ export default function BookingPage() {
                 </ol>
                 <div className="mt-3 rounded-xl border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
                   <span className="font-semibold">Booking confirmation will be sent by email within the next 48 hours.</span>{' '}
-                  If you do not receive the email within 48 hours, please contact us.
+                  If you do not receive the email, please contact us using the number or email provided on the contact page.
                 </div>
               </div>
 
