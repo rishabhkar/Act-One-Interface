@@ -7,7 +7,8 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
-    host: 'localhost',
+    // Allow LAN access for real-device testing (phone -> your PC on Wi‑Fi).
+    host: true,
     proxy: {
       '/api': {
         target: process.env.VITE_API_BASE_URL ?? 'http://192.168.29.55:8080',
@@ -15,6 +16,11 @@ export default defineConfig({
         secure: false,
       },
     },
+  },
+  preview: {
+    // Allow LAN access for `npm run preview --host`
+    host: true,
+    port: 4175,
   },
   build: {
     outDir: 'dist',

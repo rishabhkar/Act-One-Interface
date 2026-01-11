@@ -30,6 +30,9 @@ const moreMenuItems: MoreMenuItem[] = [
   { label: 'Support Us', href: '/support-us' },
   { label: 'Send Feedback', href: '/feedback' },
   { label: 'Contact', href: '/contact' },
+  { label: 'Terms & Conditions', href: '/terms' },
+  { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Refund Policy', href: '/refund' },
 ]
 
 // ─── Bottom Navigation Component (with sound button integrated) ───

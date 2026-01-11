@@ -354,7 +354,7 @@ export const siteContent: SiteContent = {
     contactDetails: {
       address: 'Gaur City 1, Avenue 1, Greater Noida West',
       city: '',
-      email: 'contact@act-one.co.uk',
+      email: 'prarambh.theatre.group@gmail.com',
       phone: '+91-9310109669',
       phone2: '+91-9818469935',
       phone3: '+91-9818620738',
@@ -374,7 +374,7 @@ export const siteContent: SiteContent = {
     },
     contact: {
       address: 'Gaur City 1, Avenue 1, Gautam Buddha Nagar, Greater Noida West, Uttar Pradesh - 201318',
-      email: 'contact@act-one.co.uk',
+      email: 'prarambh.theatre.group@gmail.com',
       phone: '+91-9310109669',
     },
     social: [

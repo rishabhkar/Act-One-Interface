@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import GlassPanel from '../components/GlassPanel'
 import SectionReveal from '../components/SectionReveal'
@@ -8,9 +8,8 @@ import useIsMobile from '../lib/useIsMobile'
 import type { GalleryImage } from '../data/galleryImages'
 
 function clampIndex(i: number, len: number) {
-  if (len <= 0) return 0
-  const mod = i % len
-  return mod < 0 ? mod + len : mod
+  if (!len || len <= 0) return 0
+  return ((i % len) + len) % len
 }
 
 const backstageImages: GalleryImage[] = [
@@ -28,140 +27,174 @@ const backstageImages: GalleryImage[] = [
   { id: 'backStage-12', src: new URL('../data/images/gallery/backStage/backStage-12.webp', import.meta.url).href, alt: 'Backstage' },
 ]
 
-export default function BackstageGalleryPage() {
+// MOBILE VERSION - Completely separate component with no complex hooks
+function MobileBackstageGallery() {
   const [index, setIndex] = useState(0)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const isMobile = useIsMobile(640)
-  const active = backstageImages.length ? backstageImages[clampIndex(index, backstageImages.length)] : null
-  const activeImgRef = useRef<HTMLImageElement | null>(null)
+  const images = backstageImages
+  const safeIndex = clampIndex(index, images.length)
+  const current = images[safeIndex]
 
-  const glassGradient = useGlassGradientFromImg(activeImgRef, {
-    cacheKey: active?.src,
-  })
+  return (
+    <div style={{ padding: 16, paddingBottom: 100 }}>
+      <header style={{ paddingTop: 24, marginBottom: 16 }}>
+        <h1 style={{ color: 'white', fontSize: 24, fontFamily: 'serif' }}>Backstage</h1>
+        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 8, lineHeight: 1.5 }}>
+          In the wings, the story learns to breathe before it speaks.
+        </p>
+      </header>
 
-  const style = useMemo(
-    () => ({ ['--glass-gradient']: glassGradient } as React.CSSProperties),
-    [glassGradient],
+      <div
+        style={{
+          backgroundColor: 'rgba(10,20,40,0.6)',
+          borderRadius: 16,
+          border: '1px solid rgba(255,255,255,0.1)',
+          padding: 16,
+        }}
+      >
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginBottom: 12 }}>
+          {safeIndex + 1} / {images.length}
+        </p>
+
+        <div
+          onClick={() => setPreviewOpen(true)}
+          style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 12, padding: 8, marginBottom: 12 }}
+        >
+          <img
+            src={current.src}
+            alt={current.alt}
+            style={{ width: '100%', height: 'auto', maxHeight: '50vh', objectFit: 'contain', display: 'block' }}
+            loading="lazy"
+          />
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 8 }}>
+            Tap to view full screen
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+          <button
+            type="button"
+            onClick={() => setIndex((i) => clampIndex(i - 1, images.length))}
+            style={{
+              padding: 10,
+              borderRadius: 9999,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: 'white',
+            }}
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setIndex((i) => clampIndex(i + 1, images.length))}
+            style={{
+              padding: 10,
+              borderRadius: 9999,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: 'white',
+            }}
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      </div>
+
+      {previewOpen && (
+        <MobileImagePreview
+          images={images}
+          initialIndex={safeIndex}
+          isOpen={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
+    </div>
   )
+}
 
-  const handleImageClick = () => {
-    if (isMobile && backstageImages.length > 0) {
-      setPreviewOpen(true)
-    }
-  }
+// DESKTOP VERSION - Separate component with full features
+function DesktopBackstageGallery() {
+  const [index, setIndex] = useState(0)
+  const images = backstageImages
+  const safeIndex = clampIndex(index, images.length)
+  const current = images[safeIndex]
+
+  const activeImgRef = useRef<HTMLImageElement | null>(null)
+  const glassGradient = useGlassGradientFromImg(activeImgRef, {
+    enabled: true,
+    cacheKey: current?.src,
+  })
 
   return (
     <div className="mx-auto max-w-6xl px-4">
       <SectionReveal>
         <div className="pt-10">
           <h1 className="font-serif text-3xl text-white md:text-4xl">Backstage</h1>
-          <p className="mt-3 w-full max-w-none text-sm text-white/70 text-justify">
-            In the wings, the story learns to breathe before it speaks. Backstage is where silence
-            becomes courage—and light finds its cue.
+          <p className="mt-3 text-sm text-white/70">
+            In the wings, the story learns to breathe before it speaks.
           </p>
         </div>
       </SectionReveal>
 
       <SectionReveal>
         <GlassPanel
-          className="mt-8 p-4 sm:p-6 text-justify"
-          labelledBy="gallery-backstage"
-          style={glassGradient ? (style as React.CSSProperties) : undefined}
+          className="mt-8 p-4 sm:p-6"
+          style={glassGradient ? ({ ['--glass-gradient']: glassGradient } as React.CSSProperties) : undefined}
         >
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div className="min-w-0">
-                <h2 id="gallery-backstage" className="font-serif text-2xl text-white sm:text-3xl">
-                  Backstage
-                </h2>
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="font-serif text-2xl text-white">Backstage</h2>
                 <div className="mt-1 text-sm text-white/70">
-                  {active
-                    ? `Image ${clampIndex(index, backstageImages.length) + 1} of ${backstageImages.length}`
-                    : 'No images found'}
+                  Image {safeIndex + 1} of {images.length}
                 </div>
               </div>
-
-              <div className="flex items-center gap-2 sm:mt-6">
-                <button
-                  type="button"
-                  className="btn-secondary px-3 py-2"
-                  onClick={() => setIndex((v) => v - 1)}
-                  disabled={!backstageImages.length}
-                  aria-label="Previous backstage image"
-                >
-                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                  Prev
+              <div className="flex gap-2">
+                <button className="btn-secondary px-3 py-2" onClick={() => setIndex((v) => clampIndex(v - 1, images.length))}>
+                  <ChevronLeft className="h-4 w-4" /> Prev
                 </button>
-                <button
-                  type="button"
-                  className="btn-secondary px-3 py-2"
-                  onClick={() => setIndex((v) => v + 1)}
-                  disabled={!backstageImages.length}
-                  aria-label="Next backstage image"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                <button className="btn-secondary px-3 py-2" onClick={() => setIndex((v) => clampIndex(v + 1, images.length))}>
+                  Next <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
-            <div 
-              className={`rounded-2xl border border-white/10 bg-black/30 p-3 ${isMobile ? 'cursor-pointer' : ''}`}
-              onClick={handleImageClick}
-            >
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-3">
               <div className="flex items-center justify-center">
-                {active ? (
-                  <img
-                    ref={activeImgRef}
-                    src={active.src}
-                    alt={active.alt}
-                    className="max-h-[70vh] w-auto max-w-full object-contain"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="py-12 text-sm text-white/60">No images in this section.</div>
-                )}
+                <img
+                  ref={activeImgRef}
+                  src={current.src}
+                  alt={current.alt}
+                  className="max-h-[70vh] w-auto max-w-full object-contain"
+                  loading="eager"
+                  decoding="async"
+                />
               </div>
-              {isMobile && backstageImages.length > 0 && (
-                <p className="text-center text-xs text-white/50 mt-2">Tap to view full screen</p>
-              )}
             </div>
 
-            {backstageImages.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-1">
-                {backstageImages.map((img, i) => (
-                  <button
-                    key={img.id}
-                    type="button"
-                    className={
-                      'h-16 shrink-0 overflow-hidden rounded-xl border ' +
-                      (i === clampIndex(index, backstageImages.length)
-                        ? 'border-white/30'
-                        : 'border-white/10 opacity-80 hover:opacity-100')
-                    }
-                    onClick={() => setIndex(i)}
-                    aria-label={`View backstage image ${i + 1}`}
-                  >
-                    <img src={img.src} alt={img.alt} className="h-full w-24 object-cover" loading="lazy" />
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="flex gap-3 overflow-x-auto pb-1">
+              {images.map((img, i) => (
+                <button
+                  key={img.id}
+                  type="button"
+                  className={'h-16 shrink-0 overflow-hidden rounded-xl border ' + (i === safeIndex ? 'border-white/30' : 'border-white/10 opacity-80')}
+                  onClick={() => setIndex(i)}
+                >
+                  <img src={img.src} alt={img.alt} className="h-full w-24 object-cover" loading="lazy" />
+                </button>
+              ))}
+            </div>
           </div>
         </GlassPanel>
       </SectionReveal>
 
-      {/* Mobile fullscreen preview */}
-      {isMobile && (
-        <MobileImagePreview
-          images={backstageImages}
-          initialIndex={clampIndex(index, backstageImages.length)}
-          isOpen={previewOpen}
-          onClose={() => setPreviewOpen(false)}
-        />
-      )}
-
       <div className="h-20" />
     </div>
   )
+}
+
+export default function BackstageGalleryPage() {
+  const isMobile = useIsMobile(640)
+  return isMobile ? <MobileBackstageGallery /> : <DesktopBackstageGallery />
 }
