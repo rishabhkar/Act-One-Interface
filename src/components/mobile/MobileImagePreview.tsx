@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 
 type MobileImagePreviewProps = {
@@ -8,107 +8,137 @@ type MobileImagePreviewProps = {
   onClose: () => void
 }
 
+/**
+ * Ultra-minimal fullscreen image preview for iOS/mobile.
+ * Avoids all scroll-lock hacks, body style mutations, and complex effects
+ * that can cause Safari to reload/crash the page.
+ */
 export default function MobileImagePreview({ images, initialIndex, isOpen, onClose }: MobileImagePreviewProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
 
-  useEffect(() => {
-    setCurrentIndex(initialIndex)
-  }, [initialIndex])
+  // Safe close handler - defer to next frame to prevent iOS Safari crash
+  const handleClose = useCallback(() => {
+    // Use setTimeout to defer the close action, preventing React state issues during click
+    setTimeout(() => {
+      onClose()
+    }, 0)
+  }, [onClose])
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
+  // Guard: nothing to show
+  if (!isOpen || !images || images.length === 0) return null
 
-  const goNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % images.length)
-  }, [images.length])
+  const safeIndex = ((currentIndex % images.length) + images.length) % images.length
+  const currentImage = images[safeIndex]
+  if (!currentImage) return null
 
-  const goPrev = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
-  }, [images.length])
-
-  // Handle keyboard navigation
-  useEffect(() => {
-    if (!isOpen) return
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') goNext()
-      else if (e.key === 'ArrowLeft') goPrev()
-      else if (e.key === 'Escape') onClose()
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, goNext, goPrev, onClose])
-
-  if (!isOpen || images.length === 0) return null
-
-  const currentImage = images[currentIndex]
+  const goPrev = () => setCurrentIndex((i) => (i - 1 + images.length) % images.length)
+  const goNext = () => setCurrentIndex((i) => (i + 1) % images.length)
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/95 flex flex-col">
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        backgroundColor: 'rgba(0,0,0,0.97)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       {/* Close button */}
       <button
-        onClick={onClose}
-        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 border border-white/10 text-white/80 hover:text-white"
-        aria-label="Close preview"
+        type="button"
+        onClick={handleClose}
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          zIndex: 10,
+          padding: 8,
+          borderRadius: 9999,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          color: 'rgba(255,255,255,0.9)',
+        }}
+        aria-label="Close"
       >
-        <X className="w-6 h-6" />
+        <X size={24} />
       </button>
 
-      {/* Image counter */}
-      <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full bg-black/50 border border-white/10 text-sm text-white/80">
-        {currentIndex + 1} / {images.length}
+      {/* Counter */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 16,
+          left: 16,
+          zIndex: 10,
+          padding: '4px 12px',
+          borderRadius: 9999,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          color: 'rgba(255,255,255,0.8)',
+          fontSize: 14,
+        }}
+      >
+        {safeIndex + 1} / {images.length}
       </div>
 
-      {/* Main image */}
-      <div className="flex-1 flex items-center justify-center p-4 pt-16">
-        <img
-          src={currentImage.src}
-          alt={currentImage.alt}
-          className="max-w-full max-h-full object-contain"
-          loading="eager"
-        />
-      </div>
+      {/* Image */}
+      <img
+        src={currentImage.src}
+        alt={currentImage.alt || 'Gallery image'}
+        style={{
+          maxWidth: '90%',
+          maxHeight: '75%',
+          objectFit: 'contain',
+        }}
+        draggable={false}
+      />
 
-      {/* Navigation arrows at bottom right */}
+      {/* Navigation */}
       {images.length > 1 && (
-        <div className="absolute bottom-6 right-4 flex items-center gap-2">
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 24,
+            right: 16,
+            display: 'flex',
+            gap: 8,
+            zIndex: 10,
+          }}
+        >
           <button
+            type="button"
             onClick={goPrev}
-            className="p-3 rounded-full bg-gradient-to-br from-[#ff6a1a]/80 to-[#0a0a0a]/80 border border-[#ff6a1a]/30 text-white shadow-lg shadow-[#ff6a1a]/20 backdrop-blur-sm hover:from-[#ff8040]"
-            aria-label="Previous image"
+            style={{
+              padding: 12,
+              borderRadius: 9999,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: 'rgba(255,255,255,0.9)',
+            }}
+            aria-label="Previous"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft size={20} />
           </button>
           <button
+            type="button"
             onClick={goNext}
-            className="p-3 rounded-full bg-gradient-to-br from-[#ff6a1a]/80 to-[#0a0a0a]/80 border border-[#ff6a1a]/30 text-white shadow-lg shadow-[#ff6a1a]/20 backdrop-blur-sm hover:from-[#ff8040]"
-            aria-label="Next image"
+            style={{
+              padding: 12,
+              borderRadius: 9999,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: 'rgba(255,255,255,0.9)',
+            }}
+            aria-label="Next"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight size={20} />
           </button>
         </div>
       )}
-
-      {/* Tap zones for navigation */}
-      <div 
-        className="absolute left-0 top-16 bottom-20 w-1/3" 
-        onClick={goPrev}
-        aria-hidden="true"
-      />
-      <div 
-        className="absolute right-0 top-16 bottom-20 w-1/3" 
-        onClick={goNext}
-        aria-hidden="true"
-      />
     </div>
   )
 }

@@ -1,23 +1,24 @@
-# Prarambh Theatre Group Interface
+# Prarambh Theatre Group — Interface
 
-A theatre-themed public website and lightweight booking flow UI for **Prarambh Theatre Group**.
+Welcome to the public-facing site and booking UI for **Prarambh Theatre Group**. It’s a dark, cinematic, glassy experience built to stay lean on phones while keeping the stage-light vibe on desktop.
 
-Built with:
+## Stack
 - React + TypeScript
 - Vite
 - Tailwind CSS
 - React Router
 - lucide-react
 
-## Features
-- Home page with cross-fading background slideshow
-- Shows listing (driven by backend `/api/auditoriums`)
-- Booking flow (UPI-first) with sold-out handling
-- Members pages + galleries
+## What’s inside
+- Home: cross-fading hero, music toggle, upcoming shows, members, press, galleries
+- Shows: pulled from the backend show API
+- Book seats: UPI-first flow with sold-out handling, validation, and summaries
+- Members + guest actors
+- Galleries: plays, backstage, workshops
 - Support / Feedback forms
 
-## Prerequisites
-- Node.js (LTS recommended)
+## Prereqs
+- Node.js (LTS)
 - npm
 
 ## Install
@@ -25,28 +26,22 @@ Built with:
 npm install
 ```
 
-## Environment variables
-This is a Vite app, so client-side variables must be prefixed with `VITE_`.
+## Environment
+Vite requires client vars to be prefixed with `VITE_`.
+Create two files (not committed):
+- `.env` (local dev)
+- `.env.production` (production builds)
 
-Create:
-- `.env` for local development
-- `.env.production` for production builds
-
-Example `.env`:
+Example (edit with your own endpoints):
 ```bash
-VITE_API_BASE_URL=http://192.168.29.55:8080
+VITE_API_BASE_URL=https://your-backend-host
 ```
 
-Example `.env.production`:
-```bash
-VITE_API_BASE_URL=https://YOUR-PROD-BACKEND-HOST
-```
-
-The UI calls API endpoints relative to this base URL, e.g.
+The UI calls API endpoints relative to `VITE_API_BASE_URL`, e.g.
 - `GET  ${VITE_API_BASE_URL}/api/auditoriums`
 - `POST ${VITE_API_BASE_URL}/api/tickets/issue`
 
-## Run locally (dev)
+## Run (dev)
 ```powershell
 npm run dev
 ```
@@ -55,27 +50,25 @@ npm run dev
 ```powershell
 npm run build
 ```
+Outputs to `dist/`.
 
-This generates `dist/`.
-
-## Preview the production build locally
+## Preview production build locally
 ```powershell
 npm run preview
 ```
 
-## Firebase Hosting deploy
-This repo is configured for Firebase Hosting (`firebase.json` points to `dist/`).
-
-1) Build:
+## Deploy (Firebase Hosting)
+Hosting is configured to serve `dist/` via `firebase.json`.
+1) Build
 ```powershell
 npm run build
 ```
-
-2) Deploy hosting:
+2) Deploy
 ```powershell
 firebase deploy --only hosting
 ```
 
 ## Notes
-- This repo is **front-end only**. The backend should expose the booking/show APIs.
-- Client-side code cannot be truly protected from source viewing in a browser; basic deterrents (e.g. disabling right-click on gallery images) are implemented only as UX friction.
+- Front-end only; bring your own backend endpoints and secrets via env files. Do **not** commit keys or passwords.
+- Gallery/image assets are already optimized to WebP; additional scripts under `scripts/` can help re-encode if needed.
+- For mobile smoothness, prefer the mobile layout (auto-switches via media query helper) and keep heavy effects disabled client-side.

@@ -1,4 +1,5 @@
 import { ExternalLink, Mail, MapPin, Phone } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { siteContent } from '../content/siteContent'
 
 export default function Footer() {
@@ -8,7 +9,7 @@ export default function Footer() {
   return (
     <footer className="mt-16 border-t border-white/10 bg-black/25">
       <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-4">
           <div>
             <div className="font-serif text-lg text-white">{siteContent.footer.left.title}</div>
             <p className="mt-2 text-sm text-white/70">{siteContent.footer.left.text}</p>
@@ -59,6 +60,27 @@ export default function Footer() {
                     </a>
                   </li>
                 )}
+            </ul>
+          </div>
+
+          <div>
+            <div className="text-sm font-semibold text-white">Legal</div>
+            <ul className="mt-3 space-y-2 text-sm text-white/75">
+              <li>
+                <Link to="/terms" className="hover:text-white transition-colors">
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="hover:text-white transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/refund" className="hover:text-white transition-colors">
+                  Refund Policy
+                </Link>
+              </li>
             </ul>
           </div>
 

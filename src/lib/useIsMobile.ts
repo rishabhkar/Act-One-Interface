@@ -1,28 +1,26 @@
-import { useEffect, useState } from 'react'
-
 /**
- * Small hook to switch layout by device capability (not width).
- * This keeps the mobile UI on phones even when rotated to landscape.
+ * Simple, stable hook to detect mobile device by user-agent.
+ * Computed once at module load - never causes re-renders.
+ * This is intentionally simple to avoid any build/runtime issues.
  */
-export default function useIsMobile(_maxWidthPx = 640) {
+
+// Compute once at module load time – never changes during session.
+const isMobileDevice: boolean = (() => {
+  if (typeof window === 'undefined') return false
+  if (typeof navigator === 'undefined') return false
+  try {
+    return /Mobi|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent || ''
+    )
+  } catch {
+    return false
+  }
+})()
+
+export default function useIsMobile(_maxWidthPx = 640): boolean {
   // Backward-compatible parameter (call sites pass a breakpoint). No-op.
   void _maxWidthPx
 
-  const [isMobile, setIsMobile] = useState(() => getIsMobileDevice())
-
-  useEffect(() => {
-    setIsMobile(getIsMobileDevice())
-    const handler = () => setIsMobile(getIsMobileDevice())
-    window.addEventListener('resize', handler)
-    return () => window.removeEventListener('resize', handler)
-  }, [])
-
-  return isMobile
-}
-
-function getIsMobileDevice() {
-  return (
-    typeof window !== 'undefined' &&
-    /Mobi|Android/i.test(window.navigator.userAgent)
-  )
+  // Return the pre-computed value - no hooks, no state, no re-renders
+  return isMobileDevice
 }

@@ -35,9 +35,20 @@ export function useGlassGradientFromImg(
 
     let cancelled = false
 
-    const compute = () => {
+    const compute = async () => {
       if (cancelled) return
       try {
+        // Ensure decoding is complete (helps mobile Safari/Chrome stability)
+        // decode() isn't supported everywhere.
+        const maybeDecodable = imgEl as HTMLImageElement & { decode?: () => Promise<void> }
+        if (typeof maybeDecodable.decode === 'function') {
+          try {
+            await maybeDecodable.decode()
+          } catch {
+            // ignore decode failures; we can still try canvas draw
+          }
+        }
+
         const w = 48
         const h = 48
         const canvas = document.createElement('canvas')
